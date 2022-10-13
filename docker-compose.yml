@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - type: volume
+        source: mongodb
+        target: /var/lib/mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: DiscordClone
+
+volumes:
+  mongodb:
