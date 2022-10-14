@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  mongodb:
+    build: ./mongodb
+    volumes:
+      - type: volume
+        source: mongodb
+        target: /data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: DiscordClone
+  nodejs:
+    build: ./node
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: bind
+        source: ./node/src
+        target: /node
+volumes:
+  mongodb:
