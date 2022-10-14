@@ -11,6 +11,9 @@ app.use(express.urlencoded({extended: true}));
 const userRoutes = require('./routes/user');
 app.use('/user', userRoutes);
 
+const serverRoutes = require('./routes/server');
+app.use('/server', serverRoutes);
+
 app.listen(port, async () => {
 
     await db.connect();
