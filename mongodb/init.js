@@ -1,3 +1,3 @@
 db = new Mongo().getDB("DiscordClone");
 
-db.test.insertOne({x: 1});
+db.users.insertOne({uuid: 0, username: "root", passwordHash: "root"});
