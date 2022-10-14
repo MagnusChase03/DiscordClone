@@ -1,15 +1,19 @@
-const express = require('express')
+const express = require('express');
+const cors = require('cors');
+const db = require('./db/conn');
+
 const app = express()
 const port = 3000
 
-app.get('/', (req, res) => {
+app.use(cors());
+app.use(express.urlencoded({extended: true}));
 
-    res.send('Hello World!');
+const userRoutes = require('./routes/user');
+app.use('/user', userRoutes);
 
-});
+app.listen(port, async () => {
 
-app.listen(port, () => {
-
+    await db.connect();
     console.log(`Example app listening on port ${port}`);
 
 });
