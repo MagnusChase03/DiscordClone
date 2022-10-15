@@ -1,20 +1,8 @@
 const express = require('express');
 const db = require('../db/conn');
+const userTokens = require('../db/userTokens');
 
 const router = express.Router();
-
-var tokens = new Map();
-
-function generateToken() {
-    let result = [];
-    let hexRef = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
-
-    for (let n = 0; n < 18; n++) {
-        result.push(hexRef[Math.floor(Math.random() * 16)]);
-    }
-    return result.join('');
-}
-
 
 router.route('/')
     .get(async (req, res) => {
@@ -22,13 +10,22 @@ router.route('/')
         var token = req.headers.token;
         if (token != null) {
 
-            var uuid = tokens.get(token);
+            var uuid = userTokens.getTokens().get(token);
             if (uuid != null) {
 
-                var conn = db.getDB();
-                var users = await conn.collection('users').find({uuid: uuid}).limit(1).toArray();
-        
-                res.json({"Status": "Ok", "user": users[0]});
+                if (parseInt(req.headers.uuid) == uuid) {
+
+                    var conn = db.getDB();
+                    var users = await conn.collection('users').find({uuid: uuid}).limit(1).toArray();
+            
+                    res.json({"Status": "Ok", "user": users[0]});
+
+                } else {
+
+                    req.status(401);
+                    res.json({ "Status": "Failed auth" });
+
+                }
 
             } else {
 
@@ -52,6 +49,7 @@ router.route('/')
 
         conn.collection('users').insertOne({ 
             uuid: lastUser[0].uuid + 1, 
+            email: req.body.email,
             username: req.body.username, 
             password: req.body.password,
             servers: []
@@ -63,30 +61,20 @@ router.route('/')
 
 router.route('/login')
     .post(async (req, res) => {
-
-        var conn = db.getDB();
-        var users = await conn.collection('users').find({}).toArray();
-
         var username = req.body.username;
         var password = req.body.password;
-        var found = false;
 
-        for (var  i = 0; i < users.length; i++) {
+        var conn = db.getDB();
+        var users = await conn.collection('users').find({username: username, password: password}).toArray();
 
-            if (users[i].username == username && users[i].password == password) {
+        if (users.length > 0) {
 
-                // Create token
-                var token = generateToken();
-                tokens.set(token, users[i].uuid);
-                found = true;
+            var token = userTokens.generateToken();
+            userTokens.getTokens().set(token, users[0].uuid);
 
-                res.json({"Status": "Ok", "token": token});
+            res.json({ "Status": "Ok", "token": token });
 
-            }
-
-        }
-
-        if (!found) {
+        } else {
 
             req.status(401);
             res.json({ "Status": "Failed login" });
@@ -101,9 +89,9 @@ router.route('/logout')
         var uuid = req.body.uuid;
         var token = req.body.token;
 
-        if (tokens.get(token) == parseInt(uuid)) {
+        if (userTokens.getTokens().get(token) == parseInt(uuid)) {
 
-            tokens.delete(token);
+            userTokens.getTokens().delete(token);
             res.json({"Status": "Ok"})
 
         } else {
