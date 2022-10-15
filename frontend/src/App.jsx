@@ -17,8 +17,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Outlet />}>
             <Route index element={<Home />} />
-            <Route path="serverselect" element={<ServerSelect />} />
-            <Route path="chatwindow" element={<ChatWindow />} />
+            <Route path="servers" element={<ServerSelect />} />
+            <Route path="chat" element={<ChatWindow />} />
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>
