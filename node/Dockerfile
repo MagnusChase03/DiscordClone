@@ -3,4 +3,6 @@ from node
 run mkdir node
 workdir node
 
-cmd node index.js
+copy ./src .
+
+cmd yarn; node index.js
