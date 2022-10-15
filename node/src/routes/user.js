@@ -11,21 +11,12 @@ router.route('/')
         if (token != null) {
 
             var uuid = userTokens.getTokens().get(token);
-            if (uuid != null) {
+            if (uuid != null) {                
 
-                if (parseInt(req.headers.uuid) == uuid) {
+                var conn = db.getDB();
+                var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
 
-                    var conn = db.getDB();
-                    var users = await conn.collection('users').find({uuid: uuid}).limit(1).toArray();
-            
-                    res.json({"Status": "Ok", "user": users[0]});
-
-                } else {
-
-                    req.status(401);
-                    res.json({ "Status": "Failed auth" });
-
-                }
+                res.json({ "Status": "Ok", "user": users[0] });     
 
             } else {
 
