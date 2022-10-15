@@ -5,6 +5,10 @@
     padding: 1em;
 }
 
+.passwordErrors {
+
+}
+
 .authForm {
     display: flex;
     flex-direction: column;
