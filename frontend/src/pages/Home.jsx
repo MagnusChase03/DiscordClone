@@ -4,10 +4,11 @@ import Footer from '../components/Footer';
 import AuthWindow from "../components/AuthWindow";
 
 function Home() {
+    const name="Discord Clone";
 
     return(
         <>
-            <h1>WELCOME</h1>
+            <h1>{name}</h1>
             <AuthWindow />
             {/* <Footer /> */}
         </>

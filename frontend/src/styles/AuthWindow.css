@@ -1,0 +1,20 @@
+.authContainer {
+    border-radius: 8px;
+    border: 1px solid;
+    border-color: #ffffff;
+    padding: 1em;
+}
+
+.authForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.formFields {
+    width: 100%;
+}
+
+.signUpButton {
+    margin: 5em 0 0 0;
+}
