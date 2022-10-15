@@ -48,6 +48,7 @@ My and a friend wanted to prep our javascript skills for an upcoming hackathon, 
 
 * ![react-shield]
 * ![node-shield]
+* ![mongo-shield]
 * ![docker-shield]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
