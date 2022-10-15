@@ -3,6 +3,6 @@ from node
 run mkdir node
 workdir node
 
-run yarn install
+copy ./src .
 
-cmd node index.js
+cmd yarn; node index.js
