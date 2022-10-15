@@ -46,7 +46,7 @@ router.route('/')
             servers: []
         });
 
-        res.json({"Stauts": "Ok"});
+        res.json({"Status": "Ok"});
 
 });
 
@@ -67,7 +67,7 @@ router.route('/login')
 
         } else {
 
-            req.status(401);
+            res.status(401);
             res.json({ "Status": "Failed login" });
 
         }
