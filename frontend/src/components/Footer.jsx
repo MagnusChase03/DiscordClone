@@ -1,10 +1,10 @@
-
+import '../styles/footer.css';
 
 
 export default function Footer() {
     return (
         <>
-            <h3>Footer</h3>
+            <footer className="siteFooter">Footer Links</footer>
         </>
     );
 }

@@ -9,7 +9,7 @@ function Home() {
         <>
             <h1>WELCOME</h1>
             <AuthWindow />
-            <Footer />
+            {/* <Footer /> */}
         </>
     );
 }
