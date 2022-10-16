@@ -275,6 +275,7 @@ router.route('/message')
                 if (isAUser) {
 
                     var lastUmid = servers[0].messages[servers[0].messages.length - 1].umid;
+                    var sentUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
                     var date = new Date().getTime();
 
                     await conn.collection('servers').updateOne({ usid: parseInt(req.body.usid) }, { $push: { messages: {
@@ -282,6 +283,7 @@ router.route('/message')
                         umid: lastUmid + 1,
                         date: date,
                         user: user,
+                        username: sentUser[0].username,
                         content: req.body.content
 
                     }}});
