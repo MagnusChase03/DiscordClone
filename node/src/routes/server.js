@@ -211,7 +211,7 @@ router.route('/message')
 
                         }
 
-                        for (var i = start; i > start - limit && i >= 0; i--) {
+                        for (var i = start - limit; i > start && i < servers[0].messages.length; i++) {
 
                             messages.push(servers[0].messages[i]);
 
