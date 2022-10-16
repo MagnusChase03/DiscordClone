@@ -1,0 +1,13 @@
+.serverList {
+    margin: 1em;
+    border: 1px solid;
+}
+
+.serverEntry {
+    margin: 1em;
+    border: 1px solid;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}

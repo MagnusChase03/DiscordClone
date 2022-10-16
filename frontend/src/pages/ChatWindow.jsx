@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from 'react-cookie';
 import { useNavigate } from "react-router";
 import SendMessage from "../components/SendMessage";
+import Footer from '../components/Footer';
+import '../styles/Chat.css';
 
 function ChatWindow() {
     const serverURL = "http://localhost:3000"
@@ -26,23 +28,51 @@ function ChatWindow() {
                 // console.log(data);
                 setMessages(data.messages);
             });
+        
     }, [sentCount]);
 
+    const messagesEndRef = useRef(null)
+    const Messages = ({ messages }) => {
+
+      
+        const scrollToBottom = () => {
+          messagesEndRef.current?.scrollIntoView()
+        }
+      
+        useEffect(() => {
+          scrollToBottom()
+        }, [messages]);
+    }
 
     return (
         <>
             <h1>{cookies.serverName}</h1>
-            <ul>
-                {messages.map((message) => (
-                    <li key={message.umid}>
-                        <p>{message.content}</p>
-                    </li>
-                ))}
+            <div className="chatWindow">
+                {messages.map((message) => {
+                    if (message.user == cookies.uuid) {
+                        return (
+                            <div key={message.umid} className="messageContainerUser">
+                                {/* <p className="messageSender">{message.user}:</p> */}
+                                <p className="messageContent">{message.content}</p>
+                            </div>
+                        );
+                    }
+                    else {
+                        return (
+                            <div key={message.umid} className="messageContainerServer">
+                                <p className="messageSender">{message.user}:</p>
+                                <p className="messageContent">{message.content}</p>
+                            </div>
+                        )
+                    }
+                })}
 
-                {messages.length === 0 && 'Nobody Here'}
-
-            </ul>
+                {messages.length === 0 && <h1>👻 It's Spooky in here!</h1>}
+                <div ref={messagesEndRef} />
+            </div>
             <SendMessage messages={sentCount} updateMessages={setSentCount} />
+            <Messages messages={messages} />
+            {/* <Footer /> */}
         </>
     );
 }

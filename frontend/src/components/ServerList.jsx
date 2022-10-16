@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import { useNavigate } from "react-router";
 import AddServer from './AddServer';
+import '../styles/ServerSelect.css';
 
 export default function ServerList() {
     const serverURL = "http://localhost:3000"
@@ -42,17 +43,21 @@ export default function ServerList() {
 
     return (
         <>
-        <AddServer servers={serverUpdate} updateServers={setServerUpdate}/>
-            <ul>
+            <AddServer servers={serverUpdate} updateServers={setServerUpdate} />
+            <div className="serverList">
                 {servers.map((server) => (
-                    <li key={server.usid}>
-                        <button onClick={() => {selectServer(server.usid, server.name)}}>{server.name}</button>
-                    </li>
+                    <div key={server.usid} className="serverEntry">
+                        <div className="serverMeta">
+                            <p>Name: {server.name}</p>
+                            <p>Owner: {server.owner}</p>
+                        </div>
+                        <button onClick={() => { selectServer(server.usid, server.name) }}>JOIN</button>
+                    </div>
                 ))}
 
                 {servers.length === 0 && 'No Servers Found'}
 
-            </ul>
+            </div>
         </>
     );
 }

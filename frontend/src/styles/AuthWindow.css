@@ -1,22 +1,39 @@
 .authContainer {
     border-radius: 8px;
-    border: 1px solid;
-    border-color: #ffffff;
+    backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 1em;
+    margin: 5em 0 0 0;
+    text-align: center;
+}
+
+.authContainer h3 {
+    border-radius: 8px;
+    padding: 0.5em;
+    width: 95%;
+    margin: 0.5em auto;
+    color: #b5001b;
+    font-weight: 900;
+    font-size: 24px;
 }
 
 .passwordErrors {
+    color: #b5001b;
+    font-weight: 600;
+    font-size: 20px;
+}
 
+.loginButton {
+    background-color: "#21a52e";
+    margin: 1em 0 0 0;
 }
 
 .authForm {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.formFields {
-    width: 100%;
 }
 
 .signUpButton {

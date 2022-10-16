@@ -85,7 +85,7 @@ export default function AuthWindow() {
                             <Field id="email" name="email" placeholder="name@example.com" type="email" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div className="passwordErrors">{errors.password}</div>}
-                            <button type="submit">Login</button>
+                            <button type="submit" className="loginButton">Login</button>
                         </Form>
                     )}
                 </Formik>
@@ -122,7 +122,7 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             })
                 .then((response) => response.json());
-                // .then((data) => { console.log(data) });
+            // .then((data) => { console.log(data) });
 
             setAuthType("login");
         }
@@ -143,7 +143,7 @@ export default function AuthWindow() {
                             <Field id="email" name="email" placeholder="name@example.com" type="email" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div>{errors.password}</div>}
-                            <button type="submit">Sign Up</button>
+                            <button type="submit" className="loginButton">Sign Up</button>
                         </Form>
                     )}
                 </Formik>
@@ -164,7 +164,14 @@ export default function AuthWindow() {
             )
         }
         else {
-            return <SignUpWindow />
+            return (
+                <>
+                    <SignUpWindow />
+                    <button className="signUpButton" onClick={() => {
+                        setAuthType("login");
+                    }}>Login Instead</button>
+                </>
+            );
         }
     }
 
@@ -172,7 +179,7 @@ export default function AuthWindow() {
     return (
         <>
             <div className="authContainer">
-                <h3>Login or Sign-Up</h3>
+                <h3>AUTHENTICATION REQUIRED</h3>
                 <AuthenticationWindow />
             </div>
 

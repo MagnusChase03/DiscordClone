@@ -1,0 +1,50 @@
+.chatWindow {
+    width: 50vw;
+    border: 1px solid;
+    /* height: 60vh;
+    overflow: auto; */
+
+    bottom: 0;
+    height: 70vh;
+    /* transition: height 1s; */
+    overflow-y:scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.messageContainerUser {
+    /* border: 1px solid; */
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
+
+.messageContainerUser p {
+    margin: 0.3em;
+}
+
+.messageContainerServer {
+    /* border: 1px solid; */
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    color: red;
+}
+
+.messageContainerServer p {
+    margin: 0.3em;
+}
+
+.messageSender {
+    font-weight: 500;
+    font-size: 20px;
+    margin-left: 2em;
+    margin-right: -1.5em;
+}
+
+.messageContent {
+    font-weight: 500;
+    font-size: 20px;
+    margin-right: 2em;
+    margin-left: 2em;
+}
