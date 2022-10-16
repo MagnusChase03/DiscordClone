@@ -193,7 +193,25 @@ router.route('/message')
 
                     if (isAUser) {
 
-                        res.json({ "Status": "Ok", "messages": servers[0].messages });
+                        var messages = []
+                        var limit = 0;
+                        if (req.headers.num != null) {
+
+                            limit = req.headers.num;
+
+                        } else {
+
+                            limit = 20;
+
+                        }
+
+                        for (var i = req.headers.oldest; i > req.headers.oldest - limit && i >= 0; i--) {
+
+                            messages.push(servers[0].messages);
+
+                        }
+
+                        res.json({ "Status": "Ok", "messages": messages });
 
                     } else {
 
