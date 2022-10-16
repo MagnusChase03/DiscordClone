@@ -194,20 +194,23 @@ router.route('/message')
                     if (isAUser) {
 
                         var messages = []
-                        var limit = 0;
+                        var start = servers[0].messages.length - 1;
+                        var limit = 20;
                         if (req.headers.num != null) {
 
                             limit = req.headers.num;
 
-                        } else {
+                        }
 
-                            limit = 20;
+                        if (req.headers.oldest != null) {
+
+                            start = req.headers.oldest;
 
                         }
 
-                        for (var i = req.headers.oldest; i > req.headers.oldest - limit && i >= 0; i--) {
+                        for (var i = start; i > start - limit && i >= 0; i--) {
 
-                            messages.push(servers[0].messages);
+                            messages.push(servers[0].messages[i]);
 
                         }
 
