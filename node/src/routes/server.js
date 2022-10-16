@@ -19,8 +19,8 @@ router.route('/')
                 var servers = [];
                 for (var i = 0; i < users[0].servers.length; i++) {
 
-                    var server = await conn.collection('servers').find({ usid: users[0].servers[i] },
-                        {projection: {messages: 0}}).limit(1).toArray();
+                    var server = await conn.collection('servers').find({ usid: users[0].servers[i] }, 
+                        { projection: { messages: 0 } }).limit(1).toArray();
 
                     servers.push(server[0]);
 
@@ -52,6 +52,7 @@ router.route('/')
 
                 var conn = db.getDB();
                 var lastServer = await conn.collection('servers').find({}).sort({ _id: -1 }).limit(1).toArray();
+                var createdUser = await conn.collection('users').find({uuid: user}).limit(1).toArray();
                 var usid = lastServer[0].usid + 1;
 
                 conn.collection('servers').insertOne({
@@ -59,6 +60,7 @@ router.route('/')
                     name: req.body.name,
                     owner: user,
                     users: [user],
+                    usernames: [createdUser[0].username],
                     messages: []
                 });
 
@@ -191,7 +193,10 @@ router.route('/join')
 
                     var conn = db.getDB();
 
+                    var createdUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
+
                     await conn.collection('servers').updateOne({ usid: serverUsid }, {$push: {users: user}});
+                    await conn.collection('servers').updateOne({ usid: serverUsid }, { $push: { usernames: createdUser[0].username } });
                     await conn.collection('users').updateOne({ uuid: user }, { $push: { servers: serverUsid } });
 
                     serverTokens.getTokens().delete(req.body.serverToken);
@@ -251,7 +256,7 @@ router.route('/message')
                     if (isAUser) {
 
                         var messages = []
-                        var start = servers[0].messages.length - 1;
+                        var start = servers[0].messages.length;
                         var limit = 20;
                         if (req.headers.num != null) {
 
@@ -265,7 +270,14 @@ router.route('/message')
 
                         }
 
-                        for (var i = start - limit; i > start && i < servers[0].messages.length; i++) {
+                        var i = start - limit;
+                        if (i < 0) {
+
+                            i = 0;
+
+                        }
+
+                        for (; i < start && i < servers[0].messages.length; i++) {
 
                             messages.push(servers[0].messages[i]);
 
@@ -328,7 +340,13 @@ router.route('/message')
 
                 if (isAUser) {
 
-                    var lastUmid = servers[0].messages[servers[0].messages.length - 1].umid;
+                    var lastUmid = -1;
+                    if (servers[0].messages.length > 0) {
+
+                        lastUmid = servers[0].messages[servers[0].messages.length - 1].umid;
+
+                    }
+
                     var sentUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
                     var date = new Date().getTime();
 
