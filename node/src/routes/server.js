@@ -52,14 +52,17 @@ router.route('/')
 
                 var conn = db.getDB();
                 var lastServer = await conn.collection('servers').find({}).sort({ _id: -1 }).limit(1).toArray();
+                var usid = lastServer[0].usid + 1;
 
                 conn.collection('servers').insertOne({
-                    usid: lastServer[0].usid + 1,
+                    usid: usid,
                     name: req.body.name,
                     owner: user,
                     users: [user],
                     messages: []
                 });
+
+                await conn.collection('users').updateOne({ uuid: user }, { $push: { servers: usid } });
 
                 res.json({ "Stauts": "Ok" });
 
