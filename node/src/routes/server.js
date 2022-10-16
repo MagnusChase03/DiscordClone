@@ -82,6 +82,60 @@ router.route('/')
 
 });
 
+router.route('/delete')
+    .post(async (req, res) => {
+        var usid = req.body.usid;
+        var uuid = req.body.uuid;
+        var password = req.body.password;
+        var token = req.body.token;
+
+        var conn = db.getDB();
+        var users = await conn.collection('users').find({ uuid: parseInt(uuid), password: password }).limit(1).toArray();
+
+        if (users.length > 0) {
+
+            if (users[0].uuid == userTokens.getTokens().get(token)) {
+
+                var servers = await conn.collection('servers').find({ usid: parseInt(usid)}).limit(1).toArray();
+                if (servers[0].owner == parseInt(uuid)) {
+
+                    for (var i = 0; i < servers[0].users.length; i++) {
+
+                        await conn.collection('user').updateOne({ uuid: servers[0].users[i] }, {
+                            $pull: {
+                                servers: parseInt(usid)
+                            }
+                        });
+
+                    }
+
+                    await conn.collection('servers').deleteOne({ usid: parseInt(usid)});
+
+                    res.json({"Status": "Ok"});
+
+                } else {
+
+                    res.status(401);
+                    res.json({ "Status": "User does not own server" });
+
+                }
+
+            } else {
+
+                res.status(404);
+                res.json({ "Status": "Token does not exist" });
+
+            }
+
+        } else {
+
+            res.status(401);
+            res.json({ "Status": "Failed to find user" });
+
+        }
+
+    });
+
 router.route('/invite')
     .post(async (req, res) => {
 
