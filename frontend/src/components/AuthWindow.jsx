@@ -59,7 +59,9 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             });
 
-            data = data.json();
+            data = await data.json();
+            console.log(data);
+            console.log(data.Status);
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
                 setPage("servers");
