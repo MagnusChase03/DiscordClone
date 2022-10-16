@@ -8,10 +8,39 @@ const router = express.Router();
 router.route('/')
     .get (async (req, res) => {
 
-        var conn = db.getDB();
-        var servers = await conn.collection('servers').find({}).toArray();
+        var userUuid = userTokens.getTokens().get(req.headers.token);
+        if (userUuid != null) {
 
-        res.json(servers);
+            if (userUuid == parseInt(req.headers.uuid)) {
+
+                var conn = db.getDB();
+                var users = await conn.collection('users').find({uuid: userUuid}).limit(1).toArray();
+
+                var servers = [];
+                for (var i = 0; i < users[0].servers.length; i++) {
+
+                    var server = await conn.collection('servers').find({ usid: users[0].servers[i] },
+                        {projection: {messages: 0}}).limit(1).toArray();
+
+                    servers.push(server[0]);
+
+                }
+
+                res.json({"Status": "Ok", "servers": servers});
+
+            } else {
+
+                res.status(401);
+                res.json({ "Status": "Failed auth" });
+
+            }
+
+        } else {
+
+            res.status(404);
+            res.json({ "Status": "Token does not exit" });
+
+        }
 
     })
     .post(async (req, res) => {

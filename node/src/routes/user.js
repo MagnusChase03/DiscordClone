@@ -14,7 +14,7 @@ router.route('/')
             if (uuid != null) {                
 
                 var conn = db.getDB();
-                var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
+                var users = await conn.collection('users').find({ uuid: uuid }, {projection: {password: 0}}).limit(1).toArray();
 
                 res.json({ "Status": "Ok", "user": users[0] });     
 
@@ -56,14 +56,14 @@ router.route('/login')
         var password = req.body.password;
 
         var conn = db.getDB();
-        var users = await conn.collection('users').find({username: username, password: password}).toArray();
+        var users = await conn.collection('users').find({username: username, password: password}).limit(1).toArray();
 
         if (users.length > 0) {
 
             var token = userTokens.generateToken();
             userTokens.getTokens().set(token, users[0].uuid);
 
-            res.json({ "Status": "Ok", "token": token });
+            res.json({ "Status": "Ok", "token": token});
 
         } else {
 

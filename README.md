@@ -48,6 +48,7 @@ My and a friend wanted to prep our javascript skills for an upcoming hackathon, 
 
 * ![react-shield]
 * ![node-shield]
+* ![mongo-shield]
 * ![docker-shield]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -100,5 +101,6 @@ Distributed under the GPL License. See `LICENSE.txt` for more information.
 [stars-shield]: https://img.shields.io/github/stars/MagnusChase03/DiscordClone?style=for-the-badge
 [license-shield]: https://img.shields.io/github/license/magnuschase03/DiscordClone?style=for-the-badge
 [node-shield]: https://img.shields.io/badge/NodeJS-20232A?style=for-the-badge&logo=node.js
+[mongo-shield]: https://img.shields.io/badge/MongoDB-20232A?style=for-the-badge&logo=mongodb
 [react-shield]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react
 [docker-shield]: https://img.shields.io/badge/Docker-20232A?style=for-the-badge&logo=docker
