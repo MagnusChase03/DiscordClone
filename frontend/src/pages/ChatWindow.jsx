@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import { useNavigate } from "react-router";
+import SendMessage from "../components/SendMessage";
 
 function ChatWindow() {
     const serverURL = "http://localhost:3000"
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
-    const [messages, setMessages] = useState([])
+    const [messages, setMessages] = useState([]);
+    const [sentCount, setSentCount] = useState(0);
     const [page, setPage] = useState('home');
     const navigate = useNavigate();
 
@@ -21,10 +23,10 @@ function ChatWindow() {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
+                // console.log(data);
                 setMessages(data.messages);
             });
-    }, []);
+    }, [sentCount]);
 
 
     return (
@@ -40,6 +42,7 @@ function ChatWindow() {
                 {messages.length === 0 && 'Nobody Here'}
 
             </ul>
+            <SendMessage messages={sentCount} updateMessages={setSentCount} />
         </>
     );
 }

@@ -19,7 +19,7 @@ export default function ServerList() {
     });
 
     function selectServer(usid, servername) {
-        console.log(usid);
+        // console.log(usid);
         setCookie('usid', usid, [{ path: '/' }, { sameSite: true }]);
         setCookie('serverName', servername, [{ path: '/' }, { sameSite: true }]);
         setPage('chat');
@@ -35,7 +35,7 @@ export default function ServerList() {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data.servers);
+                // console.log(data.servers);
                 setServers(data.servers);
             });
     }, [serverUpdate]);

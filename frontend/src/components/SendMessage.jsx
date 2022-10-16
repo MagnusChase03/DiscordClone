@@ -4,9 +4,9 @@ import { useCookies } from 'react-cookie';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 
-export default function AddServer(props) {
+export default function sendMessage(props) {
     const serverURL = "http://localhost:3000"
-    const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
+    const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
 
     function generateForm(object) {
         var formBody = [];
@@ -19,30 +19,30 @@ export default function AddServer(props) {
         return formBody;
     }
 
-    
-    function createServer(data) {
-        const serverObject = {
+    function sendMessage(data) {
+        const messageObject = {
             uuid: cookies.uuid,
             token: cookies.token,
-            name: data.name
+            usid: cookies.usid,
+            content: data.message
         }
 
-        fetch(serverURL + "/server", {
+        fetch(serverURL + "/server/message", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: generateForm(serverObject),
+            body: generateForm(messageObject),
         })
             .then((response) => response.json());
             // .then((data) => { console.log(data) });
 
-        props.updateServers(props.servers + 1);
+        props.updateMessages(props.messages + 1);
     }
 
 
     const ErrorSchema = Yup.object().shape({
-        name: Yup.string().required('Required'),
+        message: Yup.string().required('Required'),
     });
 
     return (
@@ -50,16 +50,16 @@ export default function AddServer(props) {
             <Formik
                 // Initial values for fields
                 initialValues={{
-                    name: "",
+                    message: "",
                 }}
                 validationSchema={ErrorSchema}
-                onSubmit={(values) => { createServer(values) }}
+                onSubmit={(values) => { sendMessage(values); values.message = ""; }}
             >
                 {({ errors, touched }) => (
-                    <Form className="serverForm">
-                        <Field id="name" name="name" placeholder="Server Name" />
-                        {touched.name && errors.name && <div className="serverNameErrors">{errors.name}</div>}
-                        <button type="submit">Create Server</button>
+                    <Form className="messageForm">
+                        <Field id="message" name="message" placeholder="Message" />
+                        {touched.message && errors.message && <div className="messageErrors">{errors.message}</div>}
+                        <button type="submit">Send</button>
                     </Form>
                 )}
             </Formik>

@@ -44,7 +44,7 @@ export default function AuthWindow() {
 
         // Handle sign in with backend call
         async function handleSignIn(formData) {
-            console.log("Handling Sign In for: " + formData.email);
+            // console.log("Handling Sign In for: " + formData.email);
 
             const loginObject = {
                 username: formData.email,
@@ -60,8 +60,8 @@ export default function AuthWindow() {
             });
 
             data = await data.json();
-            console.log(data);
-            console.log(data.Status);
+            // console.log(data);
+            // console.log(data.Status);
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
                 setPage("servers");
@@ -107,7 +107,7 @@ export default function AuthWindow() {
 
         // Handle sign up with backend
         function handleSignUp(formData) {
-            console.log("Handling Sign Up for: " + formData.email);
+            // console.log("Handling Sign Up for: " + formData.email);
             const loginObject = {
                 email: formData.email,
                 username: formData.email,
@@ -121,8 +121,8 @@ export default function AuthWindow() {
                 },
                 body: generateForm(loginObject),
             })
-                .then((response) => response.json())
-                .then((data) => { console.log(data) });
+                .then((response) => response.json());
+                // .then((data) => { console.log(data) });
 
             setAuthType("login");
         }
