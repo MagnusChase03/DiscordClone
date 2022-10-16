@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
+import ServerList from "../components/ServerList";
+
 
 function ServerSelect() {
     const serverURL = "http://localhost:3000"
@@ -15,7 +17,6 @@ function ServerSelect() {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log("FETCHED");
                 setCookie('uuid', data.user.uuid, [{ path: '/' }, { sameSite: true }]);
                 setCookie('username', data.user.username, [{ path: '/' }, { sameSite: true }]);
             });
@@ -27,6 +28,8 @@ function ServerSelect() {
             <p>User Authentication Token: {cookies.token}</p>
             <p>Unique User Identification Number: {cookies.uuid}</p>
             <p>Username: {cookies.username}</p>
+            {/* <AddServer /> */}
+            <ServerList />
             {/* <button onClick={() => { getInfo() }}>Find Info</button> */}
         </>
     );
