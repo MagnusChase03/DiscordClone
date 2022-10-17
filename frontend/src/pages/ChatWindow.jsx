@@ -28,19 +28,19 @@ function ChatWindow() {
                 // console.log(data);
                 setMessages(data.messages);
             });
-        
+
     }, [sentCount]);
 
     const messagesEndRef = useRef(null)
     const Messages = ({ messages }) => {
 
-      
+
         const scrollToBottom = () => {
-          messagesEndRef.current?.scrollIntoView()
+            messagesEndRef.current?.scrollIntoView()
         }
-      
+
         useEffect(() => {
-          scrollToBottom()
+            scrollToBottom()
         }, [messages]);
     }
 
@@ -60,7 +60,7 @@ function ChatWindow() {
                     else {
                         return (
                             <div key={message.umid} className="messageContainerServer">
-                                <p className="messageSender">{message.user}:</p>
+                                <p className="messageSender">{message.username}:</p>
                                 <p className="messageContent">{message.content}</p>
                             </div>
                         )

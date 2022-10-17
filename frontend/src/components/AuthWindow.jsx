@@ -37,14 +37,13 @@ export default function AuthWindow() {
 
         // Define error schema for data fields
         const ErrorSchema = Yup.object().shape({
-            email: Yup.string().email('Invalid email').required('Required'),
+            email: Yup.string().required('Required'),
             password: Yup.string()
                 .required('Required'),
         });
 
         // Handle sign in with backend call
         async function handleSignIn(formData) {
-            // console.log("Handling Sign In for: " + formData.email);
 
             const loginObject = {
                 username: formData.email,
@@ -59,9 +58,9 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             });
 
+            console.log("User: " + formData.email);
+            console.log("Password: " + formData.password);
             data = await data.json();
-            // console.log(data);
-            // console.log(data.Status);
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
                 setPage("servers");
@@ -82,7 +81,7 @@ export default function AuthWindow() {
                 >
                     {({ errors, touched }) => (
                         <Form className="authForm">
-                            <Field id="email" name="email" placeholder="name@example.com" type="email" />
+                            <Field id="email" name="email" placeholder="name@example.com" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div className="passwordErrors">{errors.password}</div>}
                             <button type="submit" className="loginButton">Login</button>
@@ -98,6 +97,7 @@ export default function AuthWindow() {
 
         // Define error schema for signing up
         const ErrorSchema = Yup.object().shape({
+            // email: Yup.string().email('Invalid email').required('Required'),
             email: Yup.string().email('Invalid email').required('Required'),
             password: Yup.string()
                 .min(8, 'Too Short!')

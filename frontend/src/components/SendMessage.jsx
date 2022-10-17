@@ -58,8 +58,8 @@ export default function sendMessage(props) {
                 {({ errors, touched }) => (
                     <Form className="messageForm">
                         <Field id="message" name="message" placeholder="Message" />
-                        {touched.message && errors.message && <div className="messageErrors">{errors.message}</div>}
                         <button type="submit">Send</button>
+                        {touched.message && errors.message && <div className="messageErrors">{errors.message}</div>}
                     </Form>
                 )}
             </Formik>

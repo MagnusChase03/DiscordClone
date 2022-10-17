@@ -36,28 +36,30 @@ export default function ServerList() {
         })
             .then((response) => response.json())
             .then((data) => {
-                // console.log(data.servers);
+                console.log(data.servers);
                 setServers(data.servers);
             });
     }, [serverUpdate]);
 
-    return (
-        <>
-            <AddServer servers={serverUpdate} updateServers={setServerUpdate} />
-            <div className="serverList">
-                {servers.map((server) => (
-                    <div key={server.usid} className="serverEntry">
-                        <div className="serverMeta">
-                            <p>Name: {server.name}</p>
-                            <p>Owner: {server.owner}</p>
+    if (servers != null) {
+        return (
+            <>
+                <AddServer servers={serverUpdate} updateServers={setServerUpdate} />
+                <div className="serverList">
+                    {servers.map((server) => (
+                        <div key={server.usid} className="serverEntry">
+                            <div className="serverMeta">
+                                <p>Name: {server.name}</p>
+                                <p>Owner: {server.owner}</p>
+                            </div>
+                            <button onClick={() => { selectServer(server.usid, server.name) }}>JOIN</button>
                         </div>
-                        <button onClick={() => { selectServer(server.usid, server.name) }}>JOIN</button>
-                    </div>
-                ))}
+                    ))}
 
-                {servers.length === 0 && 'No Servers Found'}
+                    {servers.length === 0 && 'No Servers Found'}
 
-            </div>
-        </>
-    );
+                </div>
+            </>
+        );
+    }
 }
