@@ -35,40 +35,65 @@ router.route('/')
     })
     .post(async (req, res) => {
 
-        var conn = db.getDB();
-        var lastUser = await conn.collection('users').find({}).sort({_id:-1}).limit(1).toArray();
+        if (req.body.email != null && req.body.username != null && req.body.password != null) {
 
-        conn.collection('users').insertOne({ 
-            uuid: lastUser[0].uuid + 1, 
-            email: req.body.email,
-            username: req.body.username, 
-            password: req.body.password,
-            servers: []
-        });
+            var conn = db.getDB();
+            var lastUser = await conn.collection('users').find({}).sort({_id:-1}).limit(1).toArray();
+            
+            var lastUuid = 0;
+            if (lastUser.length > 0) {
+                
+                lastUuid = lastUser[0].uuid + 1
+                
+            }
+    
+            conn.collection('users').insertOne({ 
+                uuid: lastUuid, 
+                email: req.body.email,
+                username: req.body.username, 
+                password: req.body.password,
+                servers: []
+            });
+    
+            res.json({"Status": "Ok"});
 
-        res.json({"Status": "Ok"});
+        } else {
+
+            res.status(400);
+            res.json({ "Status": "Missing user information" });
+
+        }
 
 });
 
 router.route('/login')
     .post(async (req, res) => {
-        var username = req.body.username;
-        var password = req.body.password;
 
-        var conn = db.getDB();
-        var users = await conn.collection('users').find({username: username, password: password}).limit(1).toArray();
+        if (req.body.username != null && req.body.password != null) {
 
-        if (users.length > 0) {
 
-            var token = userTokens.generateToken();
-            userTokens.getTokens().set(token, users[0].uuid);
-
-            res.json({ "Status": "Ok", "token": token});
+            var conn = db.getDB();
+            var users = await conn.collection('users').find({ username: req.body.username, 
+                password: req.body.password }).limit(1).toArray();
+    
+            if (users.length > 0) {
+    
+                var token = userTokens.generateToken();
+                userTokens.getTokens().set(token, users[0].uuid);
+    
+                res.json({ "Status": "Ok", "token": token});
+    
+            } else {
+    
+                res.status(401);
+                res.json({ "Status": "Failed login" });
+    
+            }
 
         } else {
 
-            res.status(401);
-            res.json({ "Status": "Failed login" });
+            res.status(400);
+            res.json({ "Status": "Missing user information" });
 
         }
 
@@ -77,18 +102,26 @@ router.route('/login')
 router.route('/logout')
     .post(async (req, res) => {
 
-        var uuid = req.body.uuid;
-        var token = req.body.token;
+        var uuid = parseInt(req.body.uuid);
 
-        if (userTokens.getTokens().get(token) == parseInt(uuid)) {
+        if (uuid != null && req.body.token != null) {
 
-            userTokens.getTokens().delete(token);
-            res.json({"Status": "Ok"})
+            if (userTokens.getTokens().get(req.body.token) == uuid) {
+    
+                userTokens.getTokens().delete(req.body.token);
+                res.json({"Status": "Ok"})
+    
+            } else {
+    
+                res.status(401);
+                res.json({"Status": "Could not logout user"});
+    
+            }
 
         } else {
 
-            res.status(401);
-            res.json({"Status": "Could not logout user"});
+            res.status(400);
+            res.json({ "Status": "Missing user information" });
 
         }
 
@@ -96,45 +129,64 @@ router.route('/logout')
 
 router.route('/delete')
     .post(async (req, res) => {
-        var uuid = req.body.uuid;
-        var token = req.body.token;
-        var password = req.body.password;
+        var uuid = parseInt(req.body.uuid);
 
-        var conn = db.getDB();
-        var users = await conn.collection('users').find({ uuid: parseInt(uuid), password: password }).limit(1).toArray();
+        if (uuid != null && req.body.token != null && req.body.password != null) {
 
-        if (users.length > 0) {
+            var conn = db.getDB();
+            var users = await conn.collection('users').find({ uuid: uuid, password: req.body.password }).limit(1).toArray();
+    
+            if (users.length > 0) {
+    
+                if (users[0].uuid == userTokens.getTokens().get(req.body.token)) {
+    
+                    for (var i = 0; i < users[0].servers.length; i++) {
+    
+                        await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                            $pull: {
+                                users: uuid
+                            }
+                        });
 
-            if (users[0].uuid == userTokens.getTokens().get(token)) {
+                        await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                            $pull: {
+                                usernames: users[0].username
+                            }
+                        });
+    
+                    }
+    
+                    await conn.collection('users').deleteOne({ uuid: uuid, password: password});
 
-                for (var i = 0; i < users[0].servers.length; i++) {
+                    userTokens.getTokens().forEach((eUuid, eToken) => {
 
-                    await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
-                        $pull: {
-                            users: parseInt(uuid)
+                        if (eUuid == uuid) {
+
+                            userTokens.getTokens().delete(eToken);
+
                         }
+
                     });
 
+    
+                    res.json({"Status": "Ok"});
+    
+                } else {
+    
+                    res.status(404);
+                    res.json({ "Status": "Token does not exist" });
+    
                 }
-
-                await conn.collection('users').deleteOne({ uuid: parseInt(uuid), password: password});
-                userTokens.getTokens().delete(token);
-
-                res.json({"Status": "Ok"});
-
+    
             } else {
-
-                res.status(404);
-                res.json({ "Status": "Token does not exist" });
-
+    
+                res.status(400);
+                res.json({ "Status": "Failed to find user" });
+    
             }
 
-        } else {
-
-            res.status(401);
-            res.json({ "Status": "Failed to find user" });
-
         }
+
 
 });
 
