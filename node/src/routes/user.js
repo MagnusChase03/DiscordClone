@@ -156,7 +156,7 @@ router.route('/delete')
     
                     }
     
-                    await conn.collection('users').deleteOne({ uuid: uuid, password: password});
+                    await conn.collection('users').deleteOne({ uuid: uuid, password: req.body.password });
 
                     userTokens.getTokens().forEach((eUuid, eToken) => {
 
