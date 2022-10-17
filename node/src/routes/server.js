@@ -260,13 +260,22 @@ router.route('/message')
                         var limit = 20;
                         if (req.headers.num != null) {
 
-                            limit = req.headers.num;
+                            limit = parseInt(req.headers.num);
 
                         }
 
                         if (req.headers.oldest != null) {
 
-                            start = req.headers.oldest;
+                            for (var k = 0; k < servers[0].messages.length; k++) {
+
+                                if (servers[0].messages[k].umid == parseInt(oldest)) {
+
+                                    start = k;
+                                    break;
+
+                                }
+
+                            }
 
                         }
 
