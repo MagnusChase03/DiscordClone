@@ -94,4 +94,48 @@ router.route('/logout')
 
 });
 
+router.route('/delete')
+    .post(async (req, res) => {
+        var uuid = req.body.uuid;
+        var token = req.body.token;
+        var password = req.body.password;
+
+        var conn = db.getDB();
+        var users = await conn.collection('users').find({ uuid: parseInt(uuid), password: password }).limit(1).toArray();
+
+        if (users.length > 0) {
+
+            if (users[0].uuid == userTokens.getTokens().get(token)) {
+
+                for (var i = 0; i < users[0].servers.length; i++) {
+
+                    await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                        $pull: {
+                            users: parseInt(uuid)
+                        }
+                    });
+
+                }
+
+                await conn.collection('users').deleteOne({ uuid: parseInt(uuid), password: password});
+                userTokens.getTokens().delete(token);
+
+                res.json({"Status": "Ok"});
+
+            } else {
+
+                res.status(404);
+                res.json({ "Status": "Token does not exist" });
+
+            }
+
+        } else {
+
+            res.status(401);
+            res.json({ "Status": "Failed to find user" });
+
+        }
+
+});
+
 module.exports = router;
