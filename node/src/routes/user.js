@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
-const userTokens = require('../db/userTokens');
+const tokenGen = require('../db/tokens');
 
 const router = express.Router();
 
@@ -79,7 +79,7 @@ router.route('/login')
     
             if (users.length > 0) {
     
-                var token = userTokens.generateToken();
+                var token = tokenGen.generateToken();
                 await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
                 // userTokens.getTokens().set(token, users[0].uuid);
     

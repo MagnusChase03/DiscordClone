@@ -1,7 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
-const userTokens = require('../db/userTokens');
-const serverTokens = require('../db/serverTokens');
+const tokenGen = require('../db/tokens');
 
 const router = express.Router();
 
@@ -80,7 +79,7 @@ router.route('/')
                 if (uuid == matchingToken[0].uuid) {
 
                     var lastServer = await conn.collection('servers').find({}).sort({ _id: -1 }).limit(1).toArray();
-                    var createdUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
+                    var createdUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                     if (createdUser.length > 0) {
 
                         var usid = lastServer[0].usid + 1;
@@ -94,7 +93,7 @@ router.route('/')
                             messages: []
                         });
 
-                        await conn.collection('users').updateOne({ uuid: user }, { $push: { servers: usid } });
+                        await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: usid } });
 
                         res.json({ "Stauts": "Ok" });
 
@@ -234,7 +233,7 @@ router.route('/invite')
 
                         if (inviteServer[0].owner == matchingToken[0].uuid) {
 
-                            var token = serverTokens.generateToken();
+                            var token = tokenGen.generateToken();
                             // serverTokens.getTokens().set(token, inviteServer[0].usid);
                             await conn.collection('serverTokens').insertOne({ usid: inviteServer[0].usid, token: token });
 
@@ -284,25 +283,24 @@ router.route('/join')
         if (req.body.uuid != null && req.body.token != null && req.body.serverToken != null) {
 
             var uuid = parseInt(req.body.uuid);
-            var usid = parseInt(req.body.usid);
 
             var conn = db.getDB();
             var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
             // var user = userTokens.getTokens().get(req.body.token);
             if (matchingToken.length > 0) {
 
-                if (user == uuid) {
+                if (matchingToken[0].uuid == uuid) {
 
                     var matchingServerToken = await conn.collection('serverTokens').find({ token: req.body.serverToken }).limit(1).toArray();
                     if (matchingServerToken.length > 0) {
 
 
-                        var joinUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
+                        var joinUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                         if (joinUser.length > 0) {
 
-                            await conn.collection('servers').updateOne({ usid: usid }, { $push: { users: uuid } });
-                            await conn.collection('servers').updateOne({ usid: usid }, { $push: { usernames: joinUser[0].username } });
-                            await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: usid } });
+                            await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { users: uuid } });
+                            await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { usernames: joinUser[0].username } });
+                            await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: matchingServerToken[0].usid } });
 
                             await conn.collection('serverTokens').deleteOne({ token: req.body.serverToken });
 
@@ -355,7 +353,7 @@ router.route('/message')
             var usid = parseInt(req.headers.usid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
             if (matchingToken.length > 0) {
 
                 // var user = userTokens.getTokens().get(token);
@@ -367,7 +365,7 @@ router.route('/message')
                         var isAUser = false;
                         for (var i = 0; i < servers[0].users.length; i++) {
 
-                            if (servers[0].users[i] == user) {
+                            if (servers[0].users[i] == uuid) {
 
                                 isAUser = true;
                                 break;
@@ -474,7 +472,7 @@ router.route('/message')
                         var isAUser = false;
                         for (var i = 0; i < servers[0].users.length; i++) {
 
-                            if (servers[0].users[i] == user) {
+                            if (servers[0].users[i] == uuid) {
 
                                 isAUser = true;
                                 break;
@@ -492,7 +490,7 @@ router.route('/message')
 
                             }
 
-                            var sentUser = await conn.collection('users').find({ uuid: user }).limit(1).toArray();
+                            var sentUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                             if (sentUser.length > 0) {
 
                                 var date = new Date().getTime();
@@ -503,7 +501,7 @@ router.route('/message')
 
                                             umid: lastUmid + 1,
                                             date: date,
-                                            user: user,
+                                            user: uuid,
                                             username: sentUser[0].username,
                                             content: req.body.content
 
