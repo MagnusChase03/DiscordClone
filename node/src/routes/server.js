@@ -531,7 +531,7 @@ router.route('/message')
                     } else {
 
                         res.status(404);
-                        res.json("Status": "Server not found");
+                        res.json({"Status": "Server not found"});
 
                     }
 
