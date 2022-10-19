@@ -10,11 +10,12 @@ router.route('/')
         var token = req.headers.token;
         if (token != null) {
 
-            var uuid = userTokens.getTokens().get(token);
-            if (uuid != null) {                
+            // var uuid = userTokens.getTokens().get(token);
+            var conn = db.getDB();
+            var matchingToken = await conn.collection('userTokens').find({token: token}).limit(1).toArray();
+            if (matchingToken.length > 0) {                
 
-                var conn = db.getDB();
-                var users = await conn.collection('users').find({ uuid: uuid }, {projection: {password: 0}}).limit(1).toArray();
+                var users = await conn.collection('users').find({ uuid: matchingToken[0].uuid }, {projection: {password: 0}}).limit(1).toArray();
 
                 res.json({ "Status": "Ok", "user": users[0] });     
 
@@ -79,7 +80,8 @@ router.route('/login')
             if (users.length > 0) {
     
                 var token = userTokens.generateToken();
-                userTokens.getTokens().set(token, users[0].uuid);
+                await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
+                // userTokens.getTokens().set(token, users[0].uuid);
     
                 res.json({ "Status": "Ok", "token": token});
     
@@ -106,17 +108,31 @@ router.route('/logout')
 
         if (uuid != null && req.body.token != null) {
 
-            if (userTokens.getTokens().get(req.body.token) == uuid) {
-    
-                userTokens.getTokens().delete(req.body.token);
-                res.json({"Status": "Ok"})
-    
+            var conn = db.getDB();
+            var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+
+            if (matchingToken.length > 0 ) {
+                
+                if (matchingToken[0].uuid == uuid) {
+        
+                    await conn.collection('userTokens').deleteOne({uuid: matchingToken[0].uuid, token: matchingToken[0].token});
+                    // userTokens.getTokens().delete(req.body.token);
+                    res.json({"Status": "Ok"})
+        
+                } else {
+        
+                    res.status(401);
+                    res.json({"Status": "Could not logout user"});
+        
+                }
+
             } else {
-    
-                res.status(401);
-                res.json({"Status": "Could not logout user"});
-    
+
+                res.status(404);
+                res.json({"Status": "No token found"})
+
             }
+
 
         } else {
 
@@ -138,44 +154,55 @@ router.route('/delete')
     
             if (users.length > 0) {
     
-                if (users[0].uuid == userTokens.getTokens().get(req.body.token)) {
+                var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+                if (matchingToken.length > 0) {
+
+                    if (users[0].uuid == matchingToken[0].uuid) {
     
-                    for (var i = 0; i < users[0].servers.length; i++) {
+                        for (var i = 0; i < users[0].servers.length; i++) {
+        
+                            await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                                $pull: {
+                                    users: uuid
+                                }
+                            });
     
-                        await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
-                            $pull: {
-                                users: uuid
-                            }
-                        });
-
-                        await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
-                            $pull: {
-                                usernames: users[0].username
-                            }
-                        });
-    
-                    }
-    
-                    await conn.collection('users').deleteOne({ uuid: uuid, password: req.body.password });
-
-                    userTokens.getTokens().forEach((eUuid, eToken) => {
-
-                        if (eUuid == uuid) {
-
-                            userTokens.getTokens().delete(eToken);
-
+                            await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                                $pull: {
+                                    usernames: users[0].username
+                                }
+                            });
+        
                         }
-
-                    });
-
+        
+                        await conn.collection('users').deleteOne({ uuid: uuid, password: req.body.password });
+                        await conn.collection('userTokens').deleteMany({uuid: users[0].uuid});
     
-                    res.json({"Status": "Ok"});
+                        // userTokens.getTokens().forEach((eUuid, eToken) => {
     
+                        //     if (eUuid == uuid) {
+    
+                        //         userTokens.getTokens().delete(eToken);
+    
+                        //     }
+    
+                        // });
+    
+        
+                        res.json({"Status": "Ok"});
+        
+                    } else {
+        
+                        res.status(404);
+                        res.json({ "Status": "Token does not exist" });
+        
+                    }
+
                 } else {
-    
+
                     res.status(404);
-                    res.json({ "Status": "Token does not exist" });
-    
+                    res.json({"Status": "Token not found"});
+
                 }
     
             } else {
