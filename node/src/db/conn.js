@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
+require("dotenv").config()
 
-const client = new MongoClient('mongodb://root:root@mongodb:27017/?authSource=admin');
+const client = new MongoClient('mongodb://root:' + process.env.MONGO_INITDB_ROOT_PASSWORD + '@mongodb:27017/?authSource=admin');
 
 var db;
 
