@@ -159,7 +159,7 @@ router.route('/delete')
 
                                 for (var i = 0; i < servers[0].users.length; i++) {
 
-                                    await conn.collection('user').updateOne({ uuid: servers[0].users[i] }, {
+                                    await conn.collection('users').updateOne({ uuid: servers[0].users[i] }, {
                                         $pull: {
                                             servers: usid
                                         }
@@ -303,7 +303,7 @@ router.route('/join')
 
                         if (joinUser.length > 0) {
 
-                            var joinServer = await conn.collection('servers').find({ usid: matchingToken[0].usid }).limit(1).toArray();
+                            var joinServer = await conn.collection('servers').find({ usid: matchingServerToken[0].usid }).limit(1).toArray();
                             var isAMember = false;
                             for (var i = 0; i < joinServer[0].users.length; i++) {
 
