@@ -299,17 +299,39 @@ router.route('/join')
                     var matchingServerToken = await conn.collection('serverTokens').find({ token: req.body.serverToken }).limit(1).toArray();
                     if (matchingServerToken.length > 0) {
 
-
                         var joinUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
+
                         if (joinUser.length > 0) {
 
-                            await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { users: uuid } });
-                            await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { usernames: joinUser[0].username } });
-                            await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: matchingServerToken[0].usid } });
+                            var joinServer = await conn.collection('servers').find({ usid: matchingToken[0].usid }).limit(1).toArray();
+                            var isAMember = false;
+                            for (var i = 0; i < joinServer[0].users.length; i++) {
 
-                            await conn.collection('serverTokens').deleteOne({ token: req.body.serverToken });
+                                if (joinServer[0].users[i] == joinUser[0].uuid) {
 
-                            res.json({ "Status": "Ok" });
+                                    isAMember = true;
+                                    break;
+
+                                }
+
+                            }
+
+                            if (!isAMember) {
+
+                                await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { users: uuid } });
+                                await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { usernames: joinUser[0].username } });
+                                await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: matchingServerToken[0].usid } });
+
+                                await conn.collection('serverTokens').deleteOne({ token: req.body.serverToken });
+
+                                res.json({ "Status": "Ok" });
+
+                            } else {
+
+                              res.status(401);
+                              res.json({"Status": "User is already in server"});
+
+                            }
                              
                         } else {
 
