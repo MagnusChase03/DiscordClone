@@ -12,11 +12,35 @@ services:
       MONGO_INITDB_DATABASE: DiscordClone
   nodejs:
     build: ./node
-    ports:
-      - "3000:3000"
     volumes:
       - type: bind
         source: ./node/src
         target: /node
+    depends_on:
+      - mongodb
+  nodejs2:
+    build: ./node
+    volumes:
+      - type: bind
+        source: ./node/src
+        target: /node
+    depends_on:
+      - mongodb
+  nodejs3:
+    build: ./node
+    volumes:
+      - type: bind
+        source: ./node/src
+        target: /node
+    depends_on:
+      - mongodb
+  nginx:
+    build: ./nginx
+    ports:
+      - "3000:3000"
+    depends_on:
+      - nodejs
+      - nodejs2
+      - nodejs3
 volumes:
   mongodb:

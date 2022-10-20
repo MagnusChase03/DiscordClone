@@ -37,14 +37,13 @@ export default function AuthWindow() {
 
         // Define error schema for data fields
         const ErrorSchema = Yup.object().shape({
-            email: Yup.string().email('Invalid email').required('Required'),
+            email: Yup.string().required('Required'),
             password: Yup.string()
                 .required('Required'),
         });
 
         // Handle sign in with backend call
         async function handleSignIn(formData) {
-            console.log("Handling Sign In for: " + formData.email);
 
             const loginObject = {
                 username: formData.email,
@@ -59,9 +58,9 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             });
 
+            console.log("User: " + formData.email);
+            console.log("Password: " + formData.password);
             data = await data.json();
-            console.log(data);
-            console.log(data.Status);
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
                 setPage("servers");
@@ -82,10 +81,10 @@ export default function AuthWindow() {
                 >
                     {({ errors, touched }) => (
                         <Form className="authForm">
-                            <Field id="email" name="email" placeholder="name@example.com" type="email" />
+                            <Field id="email" name="email" placeholder="name@example.com" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div className="passwordErrors">{errors.password}</div>}
-                            <button type="submit">Login</button>
+                            <button type="submit" className="loginButton">Login</button>
                         </Form>
                     )}
                 </Formik>
@@ -98,6 +97,7 @@ export default function AuthWindow() {
 
         // Define error schema for signing up
         const ErrorSchema = Yup.object().shape({
+            // email: Yup.string().email('Invalid email').required('Required'),
             email: Yup.string().email('Invalid email').required('Required'),
             password: Yup.string()
                 .min(8, 'Too Short!')
@@ -107,7 +107,7 @@ export default function AuthWindow() {
 
         // Handle sign up with backend
         function handleSignUp(formData) {
-            console.log("Handling Sign Up for: " + formData.email);
+            // console.log("Handling Sign Up for: " + formData.email);
             const loginObject = {
                 email: formData.email,
                 username: formData.email,
@@ -121,8 +121,8 @@ export default function AuthWindow() {
                 },
                 body: generateForm(loginObject),
             })
-                .then((response) => response.json())
-                .then((data) => { console.log(data) });
+                .then((response) => response.json());
+            // .then((data) => { console.log(data) });
 
             setAuthType("login");
         }
@@ -143,7 +143,7 @@ export default function AuthWindow() {
                             <Field id="email" name="email" placeholder="name@example.com" type="email" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div>{errors.password}</div>}
-                            <button type="submit">Sign Up</button>
+                            <button type="submit" className="loginButton">Sign Up</button>
                         </Form>
                     )}
                 </Formik>
@@ -164,7 +164,14 @@ export default function AuthWindow() {
             )
         }
         else {
-            return <SignUpWindow />
+            return (
+                <>
+                    <SignUpWindow />
+                    <button className="signUpButton" onClick={() => {
+                        setAuthType("login");
+                    }}>Login Instead</button>
+                </>
+            );
         }
     }
 
@@ -172,7 +179,7 @@ export default function AuthWindow() {
     return (
         <>
             <div className="authContainer">
-                <h3>Login or Sign-Up</h3>
+                <h3>AUTHENTICATION REQUIRED</h3>
                 <AuthenticationWindow />
             </div>
 
