@@ -2,6 +2,7 @@ version: "3.9"
 services:
   mongodb:
     build: ./mongodb
+    restart: unless-stopped
     volumes:
       - type: volume
         source: mongodb
@@ -12,6 +13,7 @@ services:
       MONGO_INITDB_DATABASE: DiscordClone
   nodejs:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
@@ -20,6 +22,7 @@ services:
       - mongodb
   nodejs2:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
@@ -28,6 +31,7 @@ services:
       - mongodb
   nodejs3:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
@@ -36,6 +40,7 @@ services:
       - mongodb
   nginx:
     build: ./nginx
+    restart: unless-stopped
     ports:
       - "3000:3000"
     depends_on:
