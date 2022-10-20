@@ -82,7 +82,12 @@ router.route('/')
                     var createdUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                     if (createdUser.length > 0) {
 
-                        var usid = lastServer[0].usid + 1;
+                        var usid = 0;
+                        if (lastServer.length > 0) {
+
+                            usid = lastServer[0].usid + 1;
+
+                        }
 
                         conn.collection('servers').insertOne({
                             usid: usid,
