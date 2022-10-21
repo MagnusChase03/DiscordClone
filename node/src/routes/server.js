@@ -319,7 +319,7 @@ router.route('/leave')
 
                                 await conn.collection('servers').updateOne({ usid: usid }, {
                                     $set: {
-                                        owner: theServer[0].users[0];
+                                        owner: theServer[0].users[0]
                                     }
                                 });
 
