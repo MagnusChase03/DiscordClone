@@ -58,8 +58,8 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             });
 
-            console.log("User: " + formData.username);
-            console.log("Password: " + formData.password);
+            // console.log("User: " + formData.username);
+            // console.log("Password: " + formData.password);
             data = await data.json();
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);

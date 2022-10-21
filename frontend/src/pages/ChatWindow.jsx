@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from 'react-cookie';
-import { useNavigate } from "react-router";
+import { redirect, useNavigate } from "react-router";
 import SendMessage from "../components/SendMessage";
 import Footer from '../components/Footer';
+import MemberList from "../components/MemberList";
 import '../styles/Chat.css';
 
 function ChatWindow() {
@@ -11,8 +12,14 @@ function ChatWindow() {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
     const [messages, setMessages] = useState([]);
     const [sentCount, setSentCount] = useState(0);
-    const [page, setPage] = useState('home');
+    const [page, setPage] = useState('chat');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (page === 'home') {
+            navigate('/');
+        }
+    });
 
     useEffect(() => {
         fetch(serverURL + "/server/message", {
@@ -31,6 +38,17 @@ function ChatWindow() {
 
     }, [sentCount]);
 
+    function generateForm(object) {
+        var formBody = [];
+        for (var property in object) {
+            var encodedKey = encodeURIComponent(property);
+            var encodedValue = encodeURIComponent(object[property]);
+            formBody.push(encodedKey + "=" + encodedValue);
+        }
+        formBody = formBody.join("&");
+        return formBody;
+    }
+
     const messagesEndRef = useRef(null)
     const Messages = ({ messages }) => {
 
@@ -44,9 +62,28 @@ function ChatWindow() {
         }, [messages]);
     }
 
+    async function leaveServer() {
+        const serverObject = {
+            uuid: cookies.uuid,
+            token: cookies.token,
+            usid: cookies.usid
+        }
+
+        await fetch(serverURL + '/server/leave', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: generateForm(serverObject)
+        });
+        setPage('home');
+    } 
+
     return (
         <>
             <h1>{cookies.serverName}</h1>
+            <MemberList />
+            <button onClick={() => {leaveServer()}}>LEAF</button>
             <div className="chatWindow">
                 {messages.map((message) => {
                     if (message.user == cookies.uuid) {
@@ -71,7 +108,7 @@ function ChatWindow() {
                 <div ref={messagesEndRef} />
             </div>
             <SendMessage messages={sentCount} updateMessages={setSentCount} />
-            <Messages messages={messages} />
+            <Messages />
             {/* <Footer /> */}
         </>
     );
