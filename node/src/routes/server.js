@@ -292,34 +292,25 @@ router.route('/leave')
                         var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                         if (servers.length > 0) {
 
-                            if (servers[0].owner == uuid) {
+                            await conn.collection('users').updateOne({ uuid: matchingToken[0].uuid }, {
+                                $pull: {
+                                    servers: usid
+                                }
+                            });
 
-                                await conn.collection('users').updateOne({ uuid: matchingToken[0].uuid }, {
-                                    $pull: {
-                                        servers: usid
-                                    }
-                                });
+                            await conn.collection('servers').updateOne({ usid: usid }, {
+                                $pull: {
+                                    users: uuid
+                                }
+                            });
 
-                                await conn.collection('servers').updateOne({ usid: usid }, {
-                                    $pull: {
-                                        users: uuid
-                                    }
-                                });
+                            await conn.collection('servers').updateOne({ usid: usid }, {
+                                $pull: {
+                                    usernames: users[0].username
+                                }
+                            });
 
-                                await conn.collection('servers').updateOne({ usid: usid }, {
-                                    $pull: {
-                                        usernames: users[0].username
-                                    }
-                                });
-
-                                res.json({ "Status": "Ok" });
-
-                            } else {
-
-                                res.status(401);
-                                res.json({ "Status": "Failed auth" });
-
-                            }
+                            res.json({ "Status": "Ok" });
 
                         } else {
 
