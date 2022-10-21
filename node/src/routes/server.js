@@ -315,7 +315,7 @@ router.route('/leave')
 
                                 await conn.collection('servers').deleteOne({usid: usid});
 
-                            } else if (servers[0].owner == matchingToken[0].uuid) {
+                            } else if (theServer[0].owner == matchingToken[0].uuid) {
 
                                 await conn.collection('servers').updateOne({ usid: usid }, {
                                     $set: {
