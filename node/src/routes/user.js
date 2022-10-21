@@ -40,26 +40,37 @@ router.route('/')
         if (req.body.email != null && req.body.username != null && req.body.password != null) {
 
             var conn = db.getDB();
-            var lastUser = await conn.collection('users').find({}).sort({_id:-1}).limit(1).toArray();
-            
-            var lastUuid = 0;
-            if (lastUser.length > 0) {
-                
-                lastUuid = lastUser[0].uuid + 1
-                
-            }
-    
-            var hash = bcrypt.hashSync(req.body.password, 10);
 
-            conn.collection('users').insertOne({ 
-                uuid: lastUuid, 
-                email: req.body.email,
-                username: req.body.username, 
-                password: hash,
-                servers: []
-            });
-    
-            res.json({"Status": "Ok"});
+            var existingUser = await conn.collection('users').find({email: req.body.email}).toArray();
+            if (existingUser.length <= 0) {
+
+                var lastUser = await conn.collection('users').find({}).sort({_id:-1}).limit(1).toArray();
+            
+                var lastUuid = 0;
+                if (lastUser.length > 0) {
+                    
+                    lastUuid = lastUser[0].uuid + 1
+                    
+                }
+        
+                var hash = bcrypt.hashSync(req.body.password, 10);
+
+                conn.collection('users').insertOne({ 
+                    uuid: lastUuid, 
+                    email: req.body.email,
+                    username: req.body.username, 
+                    password: hash,
+                    servers: []
+                });
+        
+                res.json({"Status": "Ok"});
+
+            } else {
+
+                res.status(401);
+                res.json({"Status": "Email in use"});
+
+            }
 
         } else {
 
@@ -180,10 +191,10 @@ router.route('/update')
 router.route('/login')
     .post(async (req, res) => {
 
-        if (req.body.username != null && req.body.password != null) {
+        if (req.body.email != null && req.body.password != null) {
 
             var conn = db.getDB();
-            var users = await conn.collection('users').find({ username: req.body.username }).limit(1).toArray();
+            var users = await conn.collection('users').find({ email: req.body.email }).limit(1).toArray();
     
             if (users.length > 0) {
 
@@ -219,7 +230,7 @@ router.route('/login')
             } else {
     
                 res.status(404);
-                res.json({ "Status": "User not login" });
+                res.json({ "Status": "User does not exist" });
     
             }
 
