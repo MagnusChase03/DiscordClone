@@ -70,6 +70,113 @@ router.route('/')
 
 });
 
+router.route('/update')
+    .post(async (req, res) => {
+
+        if (req.body.uuid != null && req.body.password != null && req.body.token != null && (req.body.username != null || req.body.newPassword != null || req.body.email != null)) {
+
+            var uuid = parseInt(req.body.uuid);
+
+            var conn = db.getDB();
+            var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
+    
+            if (users.length > 0) {
+                
+                var foundUser = false;
+                for (var i = 0; i < users.length; i++) {
+
+                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
+
+                        users = [users[i]];  
+                        foundUser = true;
+                        break;
+
+                    }
+
+                }
+
+                if (foundUser) {
+                    
+                    var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+                    if (matchingToken.length > 0) { 
+
+                        if (matchingToken[0].uuid == users[0].uuid) {
+                     
+                            var newUsername = users[0].username;
+                            var newPassword = users[0].password;
+                            var newEmail = users[0].email;
+                    
+                            if (req.body.username != null) {
+
+                                newUsername = req.body.username;
+
+                            }
+
+                            if (req.body.newPassword != null) {
+
+                                newPassword = bcrypt.hashSync(req.body.newPassword, 10);
+
+                            }
+
+                            if (req.body.email != null) {
+
+                                newEmail = req.body.email;
+
+                            }
+        
+                            await conn.collection('users').updateOne({ uuid: users[0].uuid }, {
+    
+                               $set: {
+
+                                    username: newUsername,
+                                    password: newPassword,
+                                    email: newEmail
+
+                                }
+
+                            });
+
+                            res.json({ "Status": "Ok"});
+
+
+                        } else {
+
+                            res.status(401);
+                            res.json({"Status": "Failed auth"});
+
+                        }
+
+                    } else {
+
+                        res.status(404);
+                        res.json({"Status": "Token not found"});
+
+                    }
+
+                    
+                } else {
+
+                    res.status(401);
+                    res.json({"Status": "Failed auth"})
+
+                }
+    
+            } else {
+    
+                res.status(404);
+                res.json({ "Status": "User not found" });
+    
+            }
+
+        } else {
+
+            res.status(400);
+            res.json({ "Status": "Missing uuid, token, password, or new information" });
+
+        }
+
+});
+
 router.route('/login')
     .post(async (req, res) => {
 
