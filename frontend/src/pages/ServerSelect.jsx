@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import ServerList from "../components/ServerList";
 import Footer from '../components/Footer';
+import Header from "../components/Header";
 
 
 function ServerSelect() {
@@ -28,6 +29,7 @@ function ServerSelect() {
     if (userStatus != 0) {
         return (
             <>
+                <Header />
                 <h1>SELECT A SERVER</h1>
                 <p>User Authentication Token: {cookies.token}</p>
                 <p>Unique User Identification Number: {cookies.uuid}</p>

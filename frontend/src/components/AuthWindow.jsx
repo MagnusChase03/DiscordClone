@@ -37,7 +37,7 @@ export default function AuthWindow() {
 
         // Define error schema for data fields
         const ErrorSchema = Yup.object().shape({
-            username: Yup.string().required('Required'),
+            email: Yup.string().email().required('Required'),
             password: Yup.string()
                 .required('Required'),
         });
@@ -45,8 +45,10 @@ export default function AuthWindow() {
         // Handle sign in with backend call
         async function handleSignIn(formData) {
 
+            console.log("User: " + formData.email);
+            console.log("Password: " + formData.password);
             const loginObject = {
-                username: formData.username,
+                email: formData.email,
                 password: formData.password
             }
 
@@ -58,8 +60,6 @@ export default function AuthWindow() {
                 body: generateForm(loginObject),
             });
 
-            // console.log("User: " + formData.username);
-            // console.log("Password: " + formData.password);
             data = await data.json();
             if (data.Status == 'Ok') {
                 setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
@@ -73,7 +73,7 @@ export default function AuthWindow() {
                 <Formik
                     // Initial values for fields
                     initialValues={{
-                        username: "",
+                        email: "",
                         password: "",
                     }}
                     validationSchema={ErrorSchema}
@@ -81,7 +81,7 @@ export default function AuthWindow() {
                 >
                     {({ errors, touched }) => (
                         <Form className="authForm">
-                            <Field id="username" name="username" placeholder="Username" />
+                            <Field id="email" name="email" placeholder="user@example.com" type="email" />
                             <Field id="password" name="password" placeholder="Password" type="password" />
                             {touched.password && errors.password && <div className="passwordErrors">{errors.password}</div>}
                             <button type="submit" className="loginButton">Login</button>

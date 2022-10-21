@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import ServerSelect from './pages/ServerSelect';
 import ChatWindow from './pages/ChatWindow';
 import NoPage from './pages/NoPage';
+import UserManagement from './pages/UserManagement';
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="servers" element={<ServerSelect />} />
             <Route path="chat" element={<ChatWindow />} />
+            <Route path="user" element={<UserManagement />} />
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>

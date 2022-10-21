@@ -4,6 +4,6 @@ run mkdir node
 workdir node
 
 copy ./src .
-copy ../.env .
+copy ./../.env .
 
 cmd yarn; node index.js
