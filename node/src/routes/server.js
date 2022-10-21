@@ -22,17 +22,47 @@ router.route('/')
                     var users = await conn.collection('users').find({uuid: uuid}).limit(1).toArray();
                     if (users.length > 0) {
 
-                        var servers = [];
-                        for (var i = 0; i < users[0].servers.length; i++) {
+                        if (req.headers.usid != null) {
 
-                            var server = await conn.collection('servers').find({ usid: users[0].servers[i] },
+                            var server = await conn.collection('servers').find({ usid: parseInt(req.headers.usid) },
                                 { projection: { messages: 0 } }).limit(1).toArray();
 
-                            servers.push(server[0]);
+                            if (server.length > 0) {
+
+                                if (matchingToken[0].uuid in server[0].users) {
+
+                                    res.json({"Stauts": "Ok", "server": server[0]});
+
+                                } else {
+
+                                    res.status(401);
+                                    res.json({"Status": "User not in server"});
+
+                                }
+
+                            } else {
+
+                                res.status(404);
+                                res.json({"Status": "Server does not exist"});
+
+                            }
+
+                        } else {
+
+                            var servers = [];
+                            for (var i = 0; i < users[0].servers.length; i++) {
+
+                                var server = await conn.collection('servers').find({ usid: users[0].servers[i] },
+                                    { projection: { messages: 0 } }).limit(1).toArray();
+
+                                servers.push(server[0]);
+
+                            }
+
+                            res.json({ "Status": "Ok", "servers": servers });
 
                         }
 
-                        res.json({ "Status": "Ok", "servers": servers });
 
                     } else {
 
