@@ -30,7 +30,7 @@ router.route('/')
 
                             if (server.length > 0) {
 
-                                if (matchingToken[0].uuid in server[0].users) {
+                                if ( server[0].users.indexOf(matchingToken[0].uuid) >= 0) {
 
                                     res.json({ "Stauts": "Ok", "server": server[0] });
 
