@@ -1,25 +1,26 @@
 const express = require('express');
 const db = require('../db/conn');
+const bcrypt = require('bcrypt');
 const tokenGen = require('../db/tokens');
 
 const router = express.Router();
 
 router.route('/')
-    .get (async (req, res) => {
-        
+    .get(async (req, res) => {
+
         if (req.headers.uuid != null && req.headers.token != null) {
-            
+
             var uuid = parseInt(req.headers.uuid);
 
             var conn = db.getDB();
             var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
-    
+
             // var userUuid = userTokens.getTokens().get(req.headers.token);
             if (matchingToken.length > 0) {
-    
+
                 if (matchingToken[0].uuid == uuid) {
-    
-                    var users = await conn.collection('users').find({uuid: uuid}).limit(1).toArray();
+
+                    var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                     if (users.length > 0) {
 
                         if (req.headers.usid != null) {
@@ -31,19 +32,19 @@ router.route('/')
 
                                 if (matchingToken[0].uuid in server[0].users) {
 
-                                    res.json({"Stauts": "Ok", "server": server[0]});
+                                    res.json({ "Stauts": "Ok", "server": server[0] });
 
                                 } else {
 
                                     res.status(401);
-                                    res.json({"Status": "User not in server"});
+                                    res.json({ "Status": "User not in server" });
 
                                 }
 
                             } else {
 
                                 res.status(404);
-                                res.json({"Status": "Server does not exist"});
+                                res.json({ "Status": "Server does not exist" });
 
                             }
 
@@ -63,26 +64,25 @@ router.route('/')
 
                         }
 
-
                     } else {
 
                         res.status(404);
-                        res.json({"Status": "User does not exist"})
+                        res.json({ "Status": "User does not exist" })
 
-                    }               
-    
+                    }
+
                 } else {
-    
+
                     res.status(401);
                     res.json({ "Status": "Failed auth" });
-    
+
                 }
-    
+
             } else {
-    
+
                 res.status(404);
                 res.json({ "Status": "Token does not exit" });
-    
+
             }
 
         } else {
@@ -96,9 +96,9 @@ router.route('/')
     })
     .post(async (req, res) => {
 
-        
+
         if (req.body.uuid != null && req.body.token != null && req.body.name != null) {
-            
+
             var uuid = parseInt(req.body.uuid);
 
             var conn = db.getDB();
@@ -136,7 +136,7 @@ router.route('/')
                     } else {
 
                         res.status(404);
-                        res.json({"Status": "User does not exist"});
+                        res.json({ "Status": "User does not exist" });
 
                     }
 
@@ -161,80 +161,103 @@ router.route('/')
 
         }
 
-});
+    });
 
 router.route('/delete')
     .post(async (req, res) => {
         // var token = req.body.token;
-        
+
         if (req.body.usid != null && req.body.uuid != null && req.body.password != null && req.body.token != null) {
-            
+
             var usid = parseInt(req.body.usid);
             var uuid = parseInt(req.body.uuid);
 
             var conn = db.getDB();
-            var users = await conn.collection('users').find({ uuid: uuid, password: req.body.password }).limit(1).toArray();
+            var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
 
             if (users.length > 0) {
 
-                var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
-                if (matchingToken.length > 0) {
+                var foundUser = false;
 
-                    if (users[0].uuid == matchingToken[0].uuid) {
+                for (var i = 0; i < users.length; i++) {
 
-                        var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
-                        if (servers.length > 0) {
+                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
 
-                            if (servers[0].owner == uuid) {
+                        users = [users[i]];
+                        foundUser = true;
+                        break;
 
-                                for (var i = 0; i < servers[0].users.length; i++) {
+                    }
 
-                                    await conn.collection('users').updateOne({ uuid: servers[0].users[i] }, {
-                                        $pull: {
-                                            servers: usid
-                                        }
-                                    });
+                }
+
+                if (foundUser) {
+
+                    var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+                    if (matchingToken.length > 0) {
+
+                        if (users[0].uuid == matchingToken[0].uuid) {
+
+                            var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
+                            if (servers.length > 0) {
+
+                                if (servers[0].owner == uuid) {
+
+                                    for (var i = 0; i < servers[0].users.length; i++) {
+
+                                        await conn.collection('users').updateOne({ uuid: servers[0].users[i] }, {
+                                            $pull: {
+                                                servers: usid
+                                            }
+                                        });
+
+                                    }
+
+                                    await conn.collection('servers').deleteOne({ usid: usid });
+                                    await conn.collection('serverTokens').deleteMany({ usid: usid });
+
+                                    res.json({ "Status": "Ok" });
+
+                                } else {
+
+                                    res.status(401);
+                                    res.json({ "Status": "Failed auth" });
 
                                 }
 
-                                await conn.collection('servers').deleteOne({ usid: usid });
-                                await conn.collection('serverTokens').deleteMany({ usid: usid });
-
-                                res.json({ "Status": "Ok" });
-
                             } else {
 
-                                res.status(401);
-                                res.json({ "Status": "Failed auth" });
+                                res.status(404);
+                                res.json({ "Status": "Server does not exist" })
 
                             }
 
                         } else {
 
-                            res.status(404);
-                            res.json({"Status": "Server does not exist"})
+                            res.status(401);
+                            res.json({ "Status": "Failed auth" });
 
                         }
 
+
                     } else {
 
-                        res.status(401);
-                        res.json({ "Status": "Failed auth" });
+                        res.status(404);
+                        res.json({ "Status": "Token does not exist" });
 
                     }
 
-
                 } else {
 
-                    res.status(404);
-                    res.json({ "Status": "Token does not exist" });
+                    res.status(401);
+                    res.json({ "Status": "Failed auth" });
 
                 }
 
             } else {
 
-                res.status(401);
-                res.json({ "Status": "Failed auth" });
+                res.status(404);
+                res.json({ "Status": "User not found" });
 
             }
 
@@ -250,9 +273,9 @@ router.route('/delete')
 router.route('/leave')
     .post(async (req, res) => {
         // var token = req.body.token;
-        
+
         if (req.body.usid != null && req.body.uuid != null && req.body.token != null) {
-            
+
             var usid = parseInt(req.body.usid);
             var uuid = parseInt(req.body.uuid);
 
@@ -301,7 +324,7 @@ router.route('/leave')
                         } else {
 
                             res.status(404);
-                            res.json({"Status": "Server does not exist"})
+                            res.json({ "Status": "Server does not exist" })
 
                         }
 
@@ -373,7 +396,7 @@ router.route('/invite')
                     } else {
 
                         res.status(404);
-                        res.json({"Status": "Server does not exist"});
+                        res.json({ "Status": "Server does not exist" });
 
                     }
 
@@ -399,7 +422,7 @@ router.route('/invite')
 
         }
 
-});
+    });
 
 router.route('/join')
     .post(async (req, res) => {
@@ -447,16 +470,16 @@ router.route('/join')
 
                             } else {
 
-                              res.status(401);
-                              res.json({"Status": "User is already in server"});
+                                res.status(401);
+                                res.json({ "Status": "User is already in server" });
 
                             }
-                             
+
                         } else {
 
                             res.status(404);
-                            res.json({"Status": "User does not exist"});
-                            
+                            res.json({ "Status": "User does not exist" });
+
                         }
 
                     } else {
@@ -488,13 +511,13 @@ router.route('/join')
 
         }
 
-});
+    });
 
 router.route('/message')
     .get(async (req, res) => {
 
         if (req.headers.token != null && req.headers.uuid != null && req.headers.usid != null) {
-            
+
             var uuid = parseInt(req.headers.uuid);
             var usid = parseInt(req.headers.usid);
 
@@ -571,10 +594,10 @@ router.route('/message')
                     } else {
 
                         res.status(404);
-                        res.json({"Status": "Server does not exist"});
+                        res.json({ "Status": "Server does not exist" });
 
                     }
-                  
+
 
                 } else {
 
@@ -612,7 +635,7 @@ router.route('/message')
 
                 if (matchingToken[0].uuid == uuid) {
 
-                    var servers = await conn.collection('servers').find({ usid:  usid}).limit(1).toArray();
+                    var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                     if (servers.length > 0) {
 
                         var isAUser = false;
@@ -661,7 +684,7 @@ router.route('/message')
                             } else {
 
                                 res.status(404);
-                                res.json({"Status": "User does not exist"})
+                                res.json({ "Status": "User does not exist" })
 
                             }
 
@@ -675,7 +698,7 @@ router.route('/message')
                     } else {
 
                         res.status(404);
-                        res.json({"Status": "Server not found"});
+                        res.json({ "Status": "Server not found" });
 
                     }
 

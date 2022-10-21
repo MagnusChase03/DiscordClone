@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
+const bcrypt = require('bcrypt');
 const tokenGen = require('../db/tokens');
 
 const router = express.Router();
@@ -48,11 +49,13 @@ router.route('/')
                 
             }
     
+            var hash = bcrypt.hashSync(req.body.password, 10);
+
             conn.collection('users').insertOne({ 
                 uuid: lastUuid, 
                 email: req.body.email,
                 username: req.body.username, 
-                password: req.body.password,
+                password: hash,
                 servers: []
             });
     
@@ -72,23 +75,44 @@ router.route('/login')
 
         if (req.body.username != null && req.body.password != null) {
 
-
             var conn = db.getDB();
-            var users = await conn.collection('users').find({ username: req.body.username, 
-                password: req.body.password }).limit(1).toArray();
+            var users = await conn.collection('users').find({ username: req.body.username }).limit(1).toArray();
     
             if (users.length > 0) {
+
+                var foundUser = false;
+                for (var i = 0; i < users.length; i++) {
+
+                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
+
+                        users = [users[i]];  
+                        foundUser = true;
+                        break;
+
+                    }
+
+                }
+
+                if (foundUser) {
+
+
+                    var token = tokenGen.generateToken();
+                    await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
+                    // userTokens.getTokens().set(token, users[0].uuid);
     
-                var token = tokenGen.generateToken();
-                await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
-                // userTokens.getTokens().set(token, users[0].uuid);
-    
-                res.json({ "Status": "Ok", "token": token});
+                   res.json({ "Status": "Ok", "token": token});
+
+                } else {
+
+                    res.status(401);
+                    res.json({"Status": "Failed auth"})
+
+                }
     
             } else {
     
-                res.status(401);
-                res.json({ "Status": "Failed login" });
+                res.status(404);
+                res.json({ "Status": "User not login" });
     
             }
 
@@ -150,33 +174,49 @@ router.route('/delete')
         if (uuid != null && req.body.token != null && req.body.password != null) {
 
             var conn = db.getDB();
-            var users = await conn.collection('users').find({ uuid: uuid, password: req.body.password }).limit(1).toArray();
+            var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
     
             if (users.length > 0) {
-    
-                var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
-                if (matchingToken.length > 0) {
 
-                    if (users[0].uuid == matchingToken[0].uuid) {
+                var foundUser = false;
+
+                for (var i = 0; i < users.length; i++) {
+
+                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
+
+                        users = [users[i]];  
+                        foundUser = true;
+                        break;
+
+                    }
+
+                }
+
+                if (foundUser) {
+
+                    var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+                    if (matchingToken.length > 0) {
+
+                        if (users[0].uuid == matchingToken[0].uuid) {
     
-                        for (var i = 0; i < users[0].servers.length; i++) {
+                            for (var i = 0; i < users[0].servers.length; i++) {
         
-                            await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
-                                $pull: {
-                                    users: uuid
-                                }
-                            });
+                                await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                                    $pull: {
+                                        users: uuid
+                                    }
+                                });
     
-                            await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
-                                $pull: {
-                                    usernames: users[0].username
-                                }
-                            });
+                                await conn.collection('servers').updateOne({ usid: users[0].servers[i] }, {
+                                    $pull: {
+                                        usernames: users[0].username
+                                   }
+                               });
         
-                        }
+                           }
         
-                        await conn.collection('users').deleteOne({ uuid: uuid, password: req.body.password });
-                        await conn.collection('userTokens').deleteMany({uuid: users[0].uuid});
+                           await conn.collection('users').deleteOne({ uuid: users[0].uuid, password: users[0].password });
+                           await conn.collection('userTokens').deleteMany({uuid: users[0].uuid});
     
                         // userTokens.getTokens().forEach((eUuid, eToken) => {
     
@@ -189,22 +229,29 @@ router.route('/delete')
                         // });
     
         
-                        res.json({"Status": "Ok"});
+                            res.json({"Status": "Ok"});
+                       } else {
         
-                    } else {
+                            res.status(404);
+                            res.json({ "Status": "Token does not exist" });
         
-                        res.status(404);
-                        res.json({ "Status": "Token does not exist" });
-        
-                    }
+                        }
 
+                    } else {
+
+                        res.status(404);
+                        res.json({"Status": "Token not found"});
+
+                    }
+    
                 } else {
 
-                    res.status(404);
-                    res.json({"Status": "Token not found"});
+                    res.status(401);
+                    res.json({ "Status": "Failed auth" });
 
                 }
     
+        
             } else {
     
                 res.status(400);
