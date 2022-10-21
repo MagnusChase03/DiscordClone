@@ -247,6 +247,95 @@ router.route('/delete')
 
     });
 
+router.route('/leave')
+    .post(async (req, res) => {
+        // var token = req.body.token;
+        
+        if (req.body.usid != null && req.body.uuid != null && req.body.token != null) {
+            
+            var usid = parseInt(req.body.usid);
+            var uuid = parseInt(req.body.uuid);
+
+            var conn = db.getDB();
+            var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
+
+            if (users.length > 0) {
+
+                var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+                if (matchingToken.length > 0) {
+
+                    if (users[0].uuid == matchingToken[0].uuid) {
+
+                        var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
+                        if (servers.length > 0) {
+
+                            if (servers[0].owner == uuid) {
+
+                                await conn.collection('users').updateOne({ uuid: matchingToken[0].uuid }, {
+                                    $pull: {
+                                        servers: usid
+                                    }
+                                });
+
+                                await conn.collection('servers').updateOne({ usid: usid }, {
+                                    $pull: {
+                                        users: uuid
+                                    }
+                                });
+
+                                await conn.collection('servers').updateOne({ usid: usid }, {
+                                    $pull: {
+                                        usernames: users[0].username
+                                    }
+                                });
+
+                                res.json({ "Status": "Ok" });
+
+                            } else {
+
+                                res.status(401);
+                                res.json({ "Status": "Failed auth" });
+
+                            }
+
+                        } else {
+
+                            res.status(404);
+                            res.json({"Status": "Server does not exist"})
+
+                        }
+
+                    } else {
+
+                        res.status(401);
+                        res.json({ "Status": "Failed auth" });
+
+                    }
+
+
+                } else {
+
+                    res.status(404);
+                    res.json({ "Status": "Token does not exist" });
+
+                }
+
+            } else {
+
+                res.status(401);
+                res.json({ "Status": "Failed auth" });
+
+            }
+
+        } else {
+
+            res.status(400);
+            res.json({ "Status": "No token, uuid, or usid given" });
+
+        }
+
+    });
+
 router.route('/invite')
     .post(async (req, res) => {
 
