@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
+import '../styles/ServerSelect.css';
 
 export default function AddServer(props) {
 
@@ -41,7 +42,7 @@ export default function AddServer(props) {
                     name: "",
                 }}
                 validationSchema={ErrorSchema}
-                onSubmit={(values) => { createServer(values) }}
+                onSubmit={(values) => { createServer(values); values.name = ''; }}
             >
                 {({ errors, touched }) => (
                     <Form className="serverForm">

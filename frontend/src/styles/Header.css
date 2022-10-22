@@ -1,8 +1,26 @@
 .siteHeader {
-    margin: 50px 0 0 0;
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     background-color: #1f1f1f;
+}
+
+.headerFlexContainer {
+    display: flex;
+    align-items: center;
+}
+
+.titleName {
+    margin-right: auto;
+    padding-left: 1%;
+}
+
+.username {
+    margin-left: 78%;
+}
+
+.logoutButton {
+    margin-left: auto;
+    padding-right: 1%;
 }
