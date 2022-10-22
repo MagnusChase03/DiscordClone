@@ -4,15 +4,14 @@ import { useCookies } from 'react-cookie';
 import ServerList from "../components/ServerList";
 import Footer from '../components/Footer';
 import Header from "../components/Header";
-
+import { useAsyncError } from "react-router-dom";
 
 function ServerSelect() {
-    const serverURL = "http://localhost:3000"
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
-    const [userStatus, setUserStatus] = useState(0);
+    const [isReady, setReady] = useState(false);
 
     useEffect(() => {
-        fetch(serverURL + "/user", {
+        fetch(window.$serverURL + "/user", {
             method: 'GET',
             headers: {
                 'token': cookies.token
@@ -22,11 +21,11 @@ function ServerSelect() {
             .then((data) => {
                 setCookie('uuid', data.user.uuid, [{ path: '/' }, { sameSite: true }]);
                 setCookie('username', data.user.username, [{ path: '/' }, { sameSite: true }]);
-                setUserStatus(1);
+                setReady(true);
             });
     }, []);
 
-    if (userStatus != 0) {
+    if (isReady) {
         return (
             <>
                 <Header />

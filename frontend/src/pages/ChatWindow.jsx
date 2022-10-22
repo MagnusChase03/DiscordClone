@@ -1,3 +1,8 @@
+/*
+    TODO
+    - Fix messages not loading from other users
+        - Need to do with server-side event sources to do it properly (https://medium.com/tokopedia-engineering/implementing-server-sent-events-in-reactjs-c36661d89468)
+*/
 
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from 'react-cookie';
@@ -8,7 +13,6 @@ import MemberList from "../components/MemberList";
 import '../styles/Chat.css';
 
 function ChatWindow() {
-    const serverURL = "http://localhost:3000"
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
     const [messages, setMessages] = useState([]);
     const [sentCount, setSentCount] = useState(0);
@@ -16,13 +20,7 @@ function ChatWindow() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (page === 'home') {
-            navigate('/');
-        }
-    });
-
-    useEffect(() => {
-        fetch(serverURL + "/server/message", {
+        fetch(window.$serverURL + "/server/message", {
             method: 'GET',
             headers: {
                 uuid: cookies.uuid,
@@ -32,22 +30,10 @@ function ChatWindow() {
         })
             .then((response) => response.json())
             .then((data) => {
-                // console.log(data);
                 setMessages(data.messages);
             });
 
     }, [sentCount]);
-
-    function generateForm(object) {
-        var formBody = [];
-        for (var property in object) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(object[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
 
     const messagesEndRef = useRef(null)
     const Messages = ({ messages }) => {
@@ -69,14 +55,14 @@ function ChatWindow() {
             usid: cookies.usid
         }
 
-        await fetch(serverURL + '/server/leave', {
+        await fetch(window.$serverURL + '/server/leave', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: generateForm(serverObject)
+            body: window.$generateForm(serverObject)
         });
-        setPage('home');
+        navigate('/');
     } 
 
     return (

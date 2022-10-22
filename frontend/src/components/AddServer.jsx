@@ -5,20 +5,8 @@ import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 
 export default function AddServer(props) {
-    const serverURL = "http://localhost:3000"
+
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
-
-    function generateForm(object) {
-        var formBody = [];
-        for (var property in object) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(object[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
-
     
     function createServer(data) {
         const serverObject = {
@@ -27,12 +15,12 @@ export default function AddServer(props) {
             name: data.name
         }
 
-        fetch(serverURL + "/server", {
+        fetch(window.$serverURL + "/server", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: generateForm(serverObject),
+            body: window.$generateForm(serverObject),
         })
             .then((response) => response.json());
             // .then((data) => { console.log(data) });

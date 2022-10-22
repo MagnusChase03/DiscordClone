@@ -12,7 +12,6 @@ export default function UpdatePassword() {
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
     const [page, setPage] = useState('user');
-    const serverURL = "http://localhost:3000";
 
     // Responsive navigation handling
     useEffect(() => {
@@ -20,17 +19,6 @@ export default function UpdatePassword() {
             navigate('/');
         }
     });
-
-    function generateForm(object) {
-        var formBody = [];
-        for (var property in object) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(object[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
 
     async function changePassword(formData) {
         const userObject = {
@@ -40,12 +28,12 @@ export default function UpdatePassword() {
             newPassword: formData.newPassword
         }
 
-        await fetch(serverURL + '/user/update', {
+        await fetch(window.$serverURL + '/user/update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: generateForm(userObject)
+            body: window.$generateForm(userObject)
         });
 
         alert("Password changed!");

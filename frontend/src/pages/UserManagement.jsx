@@ -13,7 +13,6 @@ export default function UserManagement() {
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
     const [page, setPage] = useState('user');
-    const serverURL = "http://localhost:3000";
 
     // Responsive navigation handling
     useEffect(() => {
@@ -21,19 +20,6 @@ export default function UserManagement() {
             navigate('/');
         }
     });
-
-    // ------ GENERATE POST REQUEST BODY ------
-    function generateForm(object) {
-        var formBody = [];
-        for (var property in object) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(object[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
-
 
     // Delete user function
     async function deleteAccount() {
@@ -49,12 +35,12 @@ export default function UserManagement() {
         if (confirm("DELETE ACCOUNT?")) {
             console.log("Deleting account");
 
-            await fetch(serverURL + '/user/delete', {
+            await fetch(window.$serverURL + '/user/delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                 },
-                body: generateForm(userObject)
+                body: window.$generateForm(userObject)
             });
 
             setCookie('uuid', null);

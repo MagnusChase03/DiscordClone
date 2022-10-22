@@ -1,3 +1,7 @@
+/* 
+    TODO
+    - Automatically go to servers if cookies present
+*/
 
 import React, { useState, useEffect } from "react";
 import Footer from '../components/Footer';

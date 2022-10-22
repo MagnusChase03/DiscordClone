@@ -7,19 +7,32 @@ import { useCookies } from 'react-cookie';
 export default function Header() {
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
-    const [page, setPage] = useState('user');
-    const serverURL = "http://localhost:3000";
 
-    // Responsive navigation handling
-    useEffect(() => {
-        if (page === 'home') {
-            navigate('/');
+    async function logout() {
+        const userObject = {
+            uuid: cookies.uuid,
+            token: cookies.token,
         }
-    });
+        
+        await fetch(window.$serverURL + "/user/logout", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: window.$generateForm(userObject)
+        });
+
+        setCookie('uuid', null);
+        setCookie('username', null);
+        setCookie('token', null);
+        navigate('/');
+    }
 
     return (
         <>
-            <header className="siteHeader">Header Links</header>
+            <header className="siteHeader">Header Links
+                <button className="logoutButton" onClick={() => {logout()}}>LOGOUT</button>            
+            </header>
         </>
     );
 }

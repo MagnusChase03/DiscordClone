@@ -7,10 +7,8 @@ export default function MemberList() {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'usid']);
     const [members, setMembers] = useState([]);
 
-    const serverURL = "http://localhost:3000";
-
     async function getMembers() {
-        var data = await fetch(serverURL + "/server", {
+        var data = await fetch(window.$serverURL + "/server", {
             method: 'GET',
             headers: {
                 uuid: cookies.uuid,
@@ -22,13 +20,14 @@ export default function MemberList() {
         console.log(data);
         setMembers(data.server.usernames);
     }
-    
+
     useEffect(() => {
         getMembers();
     }, []);
-    
+
     return (
         <>
+            <h4>Members</h4>
             <ul>
                 {members.map((member) => (
                     <li key={member}>{member}</li>

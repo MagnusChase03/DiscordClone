@@ -5,21 +5,9 @@ import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 
 export default function sendMessage(props) {
-    const serverURL = "http://localhost:3000"
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
 
-    function generateForm(object) {
-        var formBody = [];
-        for (var property in object) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(object[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
-
-    function sendMessage(data) {
+    async function sendMessage(data) {
         const messageObject = {
             uuid: cookies.uuid,
             token: cookies.token,
@@ -27,15 +15,13 @@ export default function sendMessage(props) {
             content: data.message
         }
 
-        fetch(serverURL + "/server/message", {
+        await fetch(window.$serverURL + "/server/message", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: generateForm(messageObject),
+            body: window.$generateForm(messageObject),
         })
-            .then((response) => response.json());
-            // .then((data) => { console.log(data) });
 
         props.updateMessages(props.messages + 1);
     }
