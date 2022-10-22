@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
+const redis = require('ioredis');
 const bcrypt = require('bcrypt');
 const tokenGen = require('../db/tokens');
 
@@ -686,6 +687,14 @@ router.route('/message')
                                 });
 
                                 // Update Clients
+                                var client = new redis(6379, "redis");
+
+                                client.on("error", error => {
+                                    console.log(error);
+
+                                });
+
+                                client.publish("messages", JSON.stringify(message));
 
                                 res.json({ "Status": "Ok" });
 
@@ -758,16 +767,32 @@ router.route('/message/listen')
 
                                 "Cache-Control": "no-cache",
                                 "Content-Type": "text/event-stream",
-                                "Connection": "keep-alive"
+                                "Connection": "keep-alive",
+                                "Access-Control-Allow-Origin": "*"
 
                             });
 
-                            res.flushHeaders();
+                            res.write("retry: 10000\n\n");
+                            // DO STUFvar 
+                            var client = new redis(6379, "redis");
 
-                            // DO STUFF
+                            client.on("error", error => {
+                                console.log(error);
+
+                            });
+
+                            client.subscribe("messages");
+                            client.on("message", (channel, message) => {
+
+                                console.log("data: " + message + "\n\n");
+                                res.write("data: " + message + "\n\n");
+
+                            });
+
 
                             req.on('close', async () => {
 
+                                console.log("Closed");
 
                             });
 
