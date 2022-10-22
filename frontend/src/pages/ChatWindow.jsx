@@ -6,10 +6,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from 'react-cookie';
-import { redirect, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import SendMessage from "../components/SendMessage";
-import Footer from '../components/Footer';
 import MemberList from "../components/MemberList";
+import Header from '../components/Header';
 import '../styles/Chat.css';
 
 function ChatWindow() {
@@ -63,13 +63,14 @@ function ChatWindow() {
             body: window.$generateForm(serverObject)
         });
         navigate('/');
-    } 
+    }
 
     return (
         <>
+            <Header title={cookies.serverName} />
             <h1>{cookies.serverName}</h1>
             <MemberList />
-            <button onClick={() => {leaveServer()}}>LEAF</button>
+            <button onClick={() => { leaveServer() }}>LEAF</button>
             <div className="chatWindow">
                 {messages.map((message) => {
                     if (message.user == cookies.uuid) {
