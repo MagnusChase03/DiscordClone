@@ -669,20 +669,23 @@ router.route('/message')
                             if (sentUser.length > 0) {
 
                                 var date = new Date().getTime();
+                                var message = {
+
+                                    umid: lastUmid + 1,
+                                    date: date,
+                                    user: uuid,
+                                    username: sentUser[0].username,
+                                    content: req.body.content
+
+                                };
 
                                 await conn.collection('servers').updateOne({ usid: usid }, {
                                     $push: {
-                                        messages: {
-
-                                            umid: lastUmid + 1,
-                                            date: date,
-                                            user: uuid,
-                                            username: sentUser[0].username,
-                                            content: req.body.content
-
-                                        }
+                                        messages: message
                                     }
                                 });
+
+                                // Update Clients
 
                                 res.json({ "Status": "Ok" });
 
@@ -727,6 +730,79 @@ router.route('/message')
 
             res.status(400);
             res.json({ "Status": "No token, uuid, or usid given" });
+
+        }
+
+    });
+
+router.route('/message/listen')
+    .get(async (req, res) => {
+
+        if (req.query.uuid != null && req.query.token != null && req.query.usid != null) {
+
+            var uuid = parseInt(req.query.uuid);
+            var usid = parseInt(req.query.usid);
+
+            var conn = db.getDB();
+            var matchingToken = await conn.collection('userTokens').find({ token: req.query.token }).limit(1).toArray();
+            if (matchingToken.length > 0) {
+
+                if (matchingToken[0].uuid == uuid) {
+
+                    var servers = await conn.collection('servers').find({usid: usid}).limit(1).toArray();
+                    if (servers.length > 0) {
+
+                        if (servers[0].users.indexOf(matchingToken[0].uuid) >= 0) {
+
+                            res.set({
+
+                                "Cache-Control": "no-cache",
+                                "Content-Type": "text/event-stream",
+                                "Connection": "keep-alive"
+
+                            });
+
+                            res.flushHeaders();
+
+                            // DO STUFF
+
+                            req.on('close', async () => {
+
+
+                            });
+
+                        } else {
+
+                            res.status(401);
+                            res.json({"Status": "User not in server"});
+
+                        }
+
+                    } else {
+
+                        res.status(404);
+                        res.json({"Status": "Server not found"});
+
+                    }
+
+                } else {
+
+                    res.status(401);
+                    res.json({"Status": "Failed auth"});
+
+                } 
+
+            } else {
+
+                res.status(404);
+                res.json({"Status": "Token does not exist"});
+
+            }
+
+        } else {
+
+            res.status(400);
+            res.json({"Status": "Missing uuid, token, or usid"});
 
         }
 
