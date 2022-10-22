@@ -68,9 +68,11 @@ function ChatWindow() {
     return (
         <>
             <Header title={cookies.serverName} />
+
             <h1>{cookies.serverName}</h1>
             <MemberList />
             <button onClick={() => { leaveServer() }}>LEAF</button>
+            
             <div className="chatWindow">
                 {messages.map((message) => {
                     if (message.user == cookies.uuid) {
