@@ -1,3 +1,10 @@
+/*
+    Title: Sign Up Component
+    Author: Kevin Harvey
+    Date: 20221022
+    Overview: Sign up form component. On submit it calls sign up on backend, then does a sign-in with redirection to server selection.
+*/
+
 import { useNavigate } from "react-router-dom";
 import { Formik, Field, Form } from 'formik';
 import { useCookies } from 'react-cookie';

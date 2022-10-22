@@ -4,7 +4,7 @@ import { useCookies } from 'react-cookie';
 import ServerList from "../components/ServerList";
 import Footer from '../components/Footer';
 import Header from "../components/Header";
-import { useAsyncError } from "react-router-dom";
+import '../styles/ServerSelect.css';
 
 function ServerSelect() {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
@@ -29,11 +29,11 @@ function ServerSelect() {
         return (
             <>
                 <Header />
-                <h1>SELECT A SERVER</h1>
-                <p>User Authentication Token: {cookies.token}</p>
-                <p>Unique User Identification Number: {cookies.uuid}</p>
-                <p>Username: {cookies.username}</p>
-                <ServerList />
+                <div className="serverSelectBody">
+                    <h1>SELECT A SERVER</h1>
+
+                    <ServerList />
+                </div>
                 <Footer />
             </>
         );

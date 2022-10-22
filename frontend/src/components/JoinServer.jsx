@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
+import '../styles/ServerSelect.css';
 
 export default function JoinServer(props) {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);

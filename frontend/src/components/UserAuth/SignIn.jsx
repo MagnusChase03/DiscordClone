@@ -1,3 +1,11 @@
+/*
+    Title: Sign In Component
+    Author: Kevin Harvey
+    Date: 20221022
+    Overview: Exports a login form used to authenticate the user. On submission, it attempts auth with the backend. Success results in re-direction to server select.
+*/
+
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Field, Form } from 'formik';
 import { useCookies } from 'react-cookie';
@@ -6,6 +14,7 @@ import * as Yup from 'yup';
 export default function SignIn() {
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['token']);
+    const [errorMsg, setErrorMsg] = useState(<></>);
 
 
     // Define error schema for data fields
@@ -31,9 +40,15 @@ export default function SignIn() {
         });
 
         data = await data.json();
+
         if (data.Status == 'Ok') {
+            // On successful auth
             setCookie('token', data.token, [{ path: '/' }, { sameSite: true }]);
             navigate('/servers');
+        }
+        else {
+            // On failed auth
+            setErrorMsg(<><p>Invalid Credentials</p></>);
         }
     }
 
@@ -53,6 +68,7 @@ export default function SignIn() {
                     <Form className="authForm">
                         <Field id="email" name="email" placeholder="user@example.com" type="email" />
                         <Field id="password" name="password" placeholder="Password" type="password" />
+                        {errorMsg}
                         {touched.password && errors.password && <div className="passwordErrors">{errors.password}</div>}
                         <button type="submit" className="loginButton">Login</button>
                     </Form>
