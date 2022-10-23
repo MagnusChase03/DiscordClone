@@ -38,7 +38,7 @@ export default function Header(props) {
                 <div className="logoutButton"><button onClick={() => { logout() }}>LOGOUT</button></div>
                 </div> */}
 
-                <section class="navbar">
+                <section className="navbar">
                     <div className="leftEdge"><h2>Discord Clone</h2></div>
                     <div className="centerEdge"><h2>{props.title}</h2></div>
                     <div className="rightEdge">

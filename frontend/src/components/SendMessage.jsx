@@ -4,7 +4,7 @@ import { useCookies } from 'react-cookie';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 
-export default function sendMessage(props) {
+export default function sendMessage() {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
 
     async function sendMessage(data) {
@@ -23,7 +23,6 @@ export default function sendMessage(props) {
             body: window.$generateForm(messageObject),
         })
 
-        props.updateMessages(props.messages + 1);
     }
 
 

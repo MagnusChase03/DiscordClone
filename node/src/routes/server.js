@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
+const redis = require('ioredis');
 const bcrypt = require('bcrypt');
 const tokenGen = require('../db/tokens');
 
@@ -669,20 +670,31 @@ router.route('/message')
                             if (sentUser.length > 0) {
 
                                 var date = new Date().getTime();
+                                var message = {
+
+                                    umid: lastUmid + 1,
+                                    date: date,
+                                    user: uuid,
+                                    username: sentUser[0].username,
+                                    content: req.body.content
+
+                                };
 
                                 await conn.collection('servers').updateOne({ usid: usid }, {
                                     $push: {
-                                        messages: {
-
-                                            umid: lastUmid + 1,
-                                            date: date,
-                                            user: uuid,
-                                            username: sentUser[0].username,
-                                            content: req.body.content
-
-                                        }
+                                        messages: message
                                     }
                                 });
+
+                                // Update Clients
+                                var client = new redis(6379, "redis");
+
+                                client.on("error", error => {
+                                    console.log(error);
+
+                                });
+
+                                client.publish("messages", JSON.stringify(message));
 
                                 res.json({ "Status": "Ok" });
 
@@ -727,6 +739,96 @@ router.route('/message')
 
             res.status(400);
             res.json({ "Status": "No token, uuid, or usid given" });
+
+        }
+
+    });
+
+router.route('/message/listen')
+    .get(async (req, res) => {
+
+        if (req.query.uuid != null && req.query.token != null && req.query.usid != null) {
+
+            var uuid = parseInt(req.query.uuid);
+            var usid = parseInt(req.query.usid);
+
+            var conn = db.getDB();
+            var matchingToken = await conn.collection('userTokens').find({ token: req.query.token }).limit(1).toArray();
+            if (matchingToken.length > 0) {
+
+                if (matchingToken[0].uuid == uuid) {
+
+                    var servers = await conn.collection('servers').find({usid: usid}).limit(1).toArray();
+                    if (servers.length > 0) {
+
+                        if (servers[0].users.indexOf(matchingToken[0].uuid) >= 0) {
+
+                            res.set({
+
+                                "Cache-Control": "no-cache",
+                                "Content-Type": "text/event-stream",
+                                "Connection": "keep-alive",
+                                "Access-Control-Allow-Origin": "*",
+                                "X-Accel-Buffering": "no"
+
+                            });
+
+                            res.write("retry: 10000\n\n");
+                            // DO STUFvar 
+                            var client = new redis(6379, "redis");
+
+                            client.on("error", error => {
+                                console.log(error);
+
+                            });
+
+                            client.subscribe("messages");
+                            client.on("message", (channel, message) => {
+
+                                console.log("data: " + message + "\n\n");
+                                res.write("data: " + message + "\n\n");
+
+                            });
+
+
+                            req.on('close', async () => {
+                                client.disconnect();
+                                console.log("Closed");
+
+                            });
+
+                        } else {
+
+                            res.status(401);
+                            res.json({"Status": "User not in server"});
+
+                        }
+
+                    } else {
+
+                        res.status(404);
+                        res.json({"Status": "Server not found"});
+
+                    }
+
+                } else {
+
+                    res.status(401);
+                    res.json({"Status": "Failed auth"});
+
+                } 
+
+            } else {
+
+                res.status(404);
+                res.json({"Status": "Token does not exist"});
+
+            }
+
+        } else {
+
+            res.status(400);
+            res.json({"Status": "Missing uuid, token, or usid"});
 
         }
 

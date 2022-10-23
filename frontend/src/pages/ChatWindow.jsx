@@ -7,10 +7,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from 'react-cookie';
 import { useNavigate } from "react-router";
+import { useEventSource, useEventSourceListener } from "@react-nano/use-event-source";
 import SendMessage from "../components/SendMessage";
 import MemberList from "../components/MemberList";
 import Header from '../components/Header';
 import '../styles/Chat.css';
+//"http://localhost:3000/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token
 
 function ChatWindow() {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username', 'usid', 'serverName']);
@@ -18,6 +20,10 @@ function ChatWindow() {
     const [sentCount, setSentCount] = useState(0);
     const [page, setPage] = useState('chat');
     const navigate = useNavigate();
+    const [eventSource, eventSourceStatus] = useEventSource("http://localhost:3000/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token, false);
+
+
+
 
     useEffect(() => {
         fetch(window.$serverURL + "/server/message", {
@@ -33,7 +39,15 @@ function ChatWindow() {
                 setMessages(data.messages);
             });
 
-    }, [sentCount]);
+    }, []);
+
+    useEventSourceListener(eventSource, ['message'], evt => {
+        let data = JSON.parse(evt.data);
+        let newMessages = [...messages];
+        newMessages.push(data);
+        
+        setMessages(newMessages);
+    }, [messages]);
 
     const messagesEndRef = useRef(null)
     const Messages = ({ messages }) => {
@@ -68,11 +82,9 @@ function ChatWindow() {
     return (
         <>
             <Header title={cookies.serverName} />
-
-            <h1>{cookies.serverName}</h1>
             <MemberList />
-            <button onClick={() => { leaveServer() }}>LEAF</button>
-            
+            <button onClick={() => { leaveServer() }}>Leave Server</button>
+
             <div className="chatWindow">
                 {messages.map((message) => {
                     if (message.user == cookies.uuid) {
@@ -91,12 +103,15 @@ function ChatWindow() {
                             </div>
                         )
                     }
+                    
                 })}
+
+                {/* {console.log(messages)} */}
 
                 {messages.length === 0 && <h1>👻 It's Spooky in here!</h1>}
                 <div ref={messagesEndRef} />
             </div>
-            <SendMessage messages={sentCount} updateMessages={setSentCount} />
+            <SendMessage />
             <Messages />
             {/* <Footer /> */}
         </>

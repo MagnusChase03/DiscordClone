@@ -17,7 +17,7 @@ export default function MemberList() {
             }
         })
         data = await data.json();
-        console.log(data);
+        // console.log(data);
         setMembers(data.server.usernames);
     }
 
