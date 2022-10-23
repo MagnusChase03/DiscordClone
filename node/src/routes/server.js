@@ -768,7 +768,8 @@ router.route('/message/listen')
                                 "Cache-Control": "no-cache",
                                 "Content-Type": "text/event-stream",
                                 "Connection": "keep-alive",
-                                "Access-Control-Allow-Origin": "*"
+                                "Access-Control-Allow-Origin": "*",
+                                "X-Accel-Buffering": "no"
 
                             });
 
