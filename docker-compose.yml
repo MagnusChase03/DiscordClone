@@ -51,7 +51,10 @@ services:
     depends_on:
       - mongodb
   nginx:
-    build: ./nginx
+    build: 
+      context: ./nginx
+      args:
+        mode: "dev"
     restart: unless-stopped
     ports:
       - "3000:3000"
