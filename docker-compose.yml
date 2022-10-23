@@ -21,6 +21,9 @@ services:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nodejs2:
@@ -30,6 +33,9 @@ services:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nodejs3:
@@ -39,6 +45,9 @@ services:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nginx:
@@ -46,9 +55,14 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    volumes:
+      - type: volume
+        source: certs
+        target: /etc/nginx/certs
     depends_on:
       - nodejs
       - nodejs2
       - nodejs3
 volumes:
   mongodb:
+  certs:
