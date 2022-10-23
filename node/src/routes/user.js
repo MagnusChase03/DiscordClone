@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/conn');
+const redis = require('ioredis');
 const bcrypt = require('bcrypt');
 const tokenGen = require('../db/tokens');
 
@@ -13,12 +14,29 @@ router.route('/')
 
             // var uuid = userTokens.getTokens().get(token);
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({token: token}).limit(1).toArray();
-            if (matchingToken.length > 0) {                
+            // var matchingToken = await conn.collection('userTokens').find({token: token}).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
-                var users = await conn.collection('users').find({ uuid: matchingToken[0].uuid }, {projection: {password: 0}}).limit(1).toArray();
+            client.on("error", error => {
+                console.log(error);
+            });
 
-                res.json({ "Status": "Ok", "user": users[0] });     
+            var tokenUuid = await client.get(token);
+
+            if (tokenUuid != null) {                
+
+                var users = await conn.collection('users').find({ uuid: parseInt(tokenUuid) }, {projection: {password: 0}}).limit(1).toArray();
+                if (users.length > 0) {
+
+                    res.json({ "Status": "Ok", "user": users[0] });     
+
+                } else {
+
+                    res.status(404);
+                    res.json({"Status": "User does not exist"})
+
+                }
+
 
             } else {
 
@@ -93,25 +111,20 @@ router.route('/update')
     
             if (users.length > 0) {
                 
-                var foundUser = false;
-                for (var i = 0; i < users.length; i++) {
-
-                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
-
-                        users = [users[i]];  
-                        foundUser = true;
-                        break;
-
-                    }
-
-                }
-
-                if (foundUser) {
+                if (bcrypt.compareSync(req.body.password, users[0].password)) {
                     
-                    var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
-                    if (matchingToken.length > 0) { 
+                    // var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+                    var client = new redis(6379, "redis");
 
-                        if (matchingToken[0].uuid == users[0].uuid) {
+                    client.on("error", error => {
+                        console.log(error);
+                    });
+
+                    var tokenUuid = await client.get(req.body.token);
+
+                    if (tokenUuid != null) { 
+
+                        if (parseInt(tokenUuid) == users[0].uuid) {
                      
                             var newUsername = users[0].username;
                             var newPassword = users[0].password;
@@ -198,24 +211,17 @@ router.route('/login')
     
             if (users.length > 0) {
 
-                var foundUser = false;
-                for (var i = 0; i < users.length; i++) {
-
-                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
-
-                        users = [users[i]];  
-                        foundUser = true;
-                        break;
-
-                    }
-
-                }
-
-                if (foundUser) {
-
+                if (bcrypt.compareSync(req.body.password, users[0].password)) {
 
                     var token = tokenGen.generateToken();
-                    await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
+                    var client = new redis(6379, "redis");
+
+                    client.on("error", error => {
+                        console.log(error);
+                    });
+
+                    await client.set(token, "" + users[0].uuid, "EX", 3600);
+                    // await conn.collection('userTokens').insertOne({uuid:users[0].uuid, token: token});
                     // userTokens.getTokens().set(token, users[0].uuid);
     
                    res.json({ "Status": "Ok", "token": token});
@@ -251,14 +257,22 @@ router.route('/logout')
         if (uuid != null && req.body.token != null) {
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
-            if (matchingToken.length > 0 ) {
+            client.on("error", error => {
+                console.log(error);
+            });
+
+            var tokenUuid = await client.get(req.body.token);
+
+            if (tokenUuid != null) {
                 
-                if (matchingToken[0].uuid == uuid) {
+                if (parseInt(tokenUuid) == uuid) {
         
-                    await conn.collection('userTokens').deleteOne({uuid: matchingToken[0].uuid, token: matchingToken[0].token});
+                    // await conn.collection('userTokens').deleteOne({uuid: matchingToken[0].uuid, token: matchingToken[0].token});
                     // userTokens.getTokens().delete(req.body.token);
+                    await client.getdel(req.body.token);
                     res.json({"Status": "Ok"})
         
                 } else {
@@ -296,26 +310,20 @@ router.route('/delete')
     
             if (users.length > 0) {
 
-                var foundUser = false;
+                if (bcrypt.compareSync(req.body.password, users[0].password)) {
 
-                for (var i = 0; i < users.length; i++) {
+                    // var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
+                    var client = new redis(6379, "redis");
 
-                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
+                    client.on("error", error => {
+                        console.log(error);
+                    });
 
-                        users = [users[i]];  
-                        foundUser = true;
-                        break;
+                    var tokenUuid = await client.get(req.body.token);
 
-                    }
+                    if (tokenUuid != null) {
 
-                }
-
-                if (foundUser) {
-
-                    var matchingToken = await conn.collection('userTokens').find({token: req.body.token}).limit(1).toArray();
-                    if (matchingToken.length > 0) {
-
-                        if (users[0].uuid == matchingToken[0].uuid) {
+                        if (users[0].uuid == parseInt(tokenUuid)) {
     
                             for (var i = 0; i < users[0].servers.length; i++) {
         
@@ -334,7 +342,7 @@ router.route('/delete')
                            }
         
                            await conn.collection('users').deleteOne({ uuid: users[0].uuid, password: users[0].password });
-                           await conn.collection('userTokens').deleteMany({uuid: users[0].uuid});
+                           // await conn.collection('userTokens').deleteMany({uuid: users[0].uuid});
     
                         // userTokens.getTokens().forEach((eUuid, eToken) => {
     
