@@ -136,6 +136,7 @@ router.route('/')
                             usid: usid,
                             name: req.body.name,
                             owner: uuid,
+                            ownerUsername: createdUser[0].username,
                             users: [uuid],
                             usernames: [createdUser[0].username],
                             messages: []
@@ -330,9 +331,12 @@ router.route('/leave')
 
                             } else if (theServer[0].owner == matchingToken[0].uuid) {
 
+                                var newOwner = await conn.collection('users').find({uuid: theServer[0].users[0]}).limit(1).toArray();
+
                                 await conn.collection('servers').updateOne({ usid: usid }, {
                                     $set: {
-                                        owner: theServer[0].users[0]
+                                        owner: theServer[0].users[0],
+                                        ownerUsername: newOwner[0].username 
                                     }
                                 });
 
