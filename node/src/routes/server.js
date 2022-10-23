@@ -14,12 +14,18 @@ router.route('/')
             var uuid = parseInt(req.headers.uuid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
+            client.on("error", error => {
+                console.log(error);
+            });
+
+            var tokenUuid = await client.get(req.headers.token);
             // var userUuid = userTokens.getTokens().get(req.headers.token);
-            if (matchingToken.length > 0) {
+            if (tokenUuid != null) {
 
-                if (matchingToken[0].uuid == uuid) {
+                if (parseInt(tokenUuid) == uuid) {
 
                     var users = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
                     if (users.length > 0) {
@@ -31,7 +37,7 @@ router.route('/')
 
                             if (server.length > 0) {
 
-                                if ( server[0].users.indexOf(matchingToken[0].uuid) >= 0) {
+                                if ( server[0].users.indexOf(uuid) >= 0) {
 
                                     res.json({ "Stauts": "Ok", "server": server[0] });
 
@@ -103,11 +109,17 @@ router.route('/')
             var uuid = parseInt(req.body.uuid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
-            if (matchingToken.length > 0) {
+            client.on("error", error => {
+                console.log(error);
+            });
 
-                if (uuid == matchingToken[0].uuid) {
+            var tokenUuid = await client.get(req.body.token);
+            if (tokenUuid != null) {
+
+                if (uuid == parseInt(tokenUuid)) {
 
                     var lastServer = await conn.collection('servers').find({}).sort({ _id: -1 }).limit(1).toArray();
                     var createdUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
@@ -123,8 +135,8 @@ router.route('/')
                         conn.collection('servers').insertOne({
                             usid: usid,
                             name: req.body.name,
-                            owner: matchingToken[0].uuid,
-                            users: [matchingToken[0].uuid],
+                            owner: uuid,
+                            users: [uuid],
                             usernames: [createdUser[0].username],
                             messages: []
                         });
@@ -178,26 +190,19 @@ router.route('/delete')
 
             if (users.length > 0) {
 
-                var foundUser = false;
+                if (bcrypt.compareSync(req.body.password, users[0].password)) {
 
-                for (var i = 0; i < users.length; i++) {
+                    // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+                    var client = new redis(6379, "redis");
 
-                    if (bcrypt.compareSync(req.body.password, users[i].password)) {
+                    client.on("error", error => {
+                        console.log(error);
+                    });
 
-                        users = [users[i]];
-                        foundUser = true;
-                        break;
+                    var tokenUuid = await client.get(req.body.token);
+                    if (tokenUuid != null) {
 
-                    }
-
-                }
-
-                if (foundUser) {
-
-                    var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
-                    if (matchingToken.length > 0) {
-
-                        if (users[0].uuid == matchingToken[0].uuid) {
+                        if (users[0].uuid == parseInt(tokenUuid)) {
 
                             var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                             if (servers.length > 0) {
@@ -215,7 +220,7 @@ router.route('/delete')
                                     }
 
                                     await conn.collection('servers').deleteOne({ usid: usid });
-                                    await conn.collection('serverTokens').deleteMany({ usid: usid });
+                                    // await conn.collection('serverTokens').deleteMany({ usid: usid });
 
                                     res.json({ "Status": "Ok" });
 
@@ -285,15 +290,22 @@ router.route('/leave')
 
             if (users.length > 0) {
 
-                var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
-                if (matchingToken.length > 0) {
+                // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+                var client = new redis(6379, "redis");
 
-                    if (users[0].uuid == matchingToken[0].uuid) {
+                client.on("error", error => {
+                    console.log(error);
+                });
+
+                var tokenUuid = await client.get(req.body.token);
+                if (tokenUuid != null) {
+
+                    if (users[0].uuid == parseInt(tokenUuid)) {
 
                         var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                         if (servers.length > 0) {
 
-                            await conn.collection('users').updateOne({ uuid: matchingToken[0].uuid }, {
+                            await conn.collection('users').updateOne({ uuid: uuid }, {
                                 $pull: {
                                     servers: usid
                                 }
@@ -376,20 +388,27 @@ router.route('/invite')
             var usid = parseInt(req.body.usid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
-            if (matchingToken.length > 0) {
+            client.on("error", error => {
+                console.log(error);
+            });
 
-                if (matchingToken[0].uuid == uuid) {
+            var tokenUuid = await client.get(req.body.token);
+            if (tokenUuid != null) {
+
+                if (parseInt(tokenUuid) == uuid) {
 
                     var inviteServer = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                     if (inviteServer.length > 0) {
 
-                        if (inviteServer[0].owner == matchingToken[0].uuid) {
+                        if (inviteServer[0].owner == uuid) {
 
                             var token = tokenGen.generateToken();
                             // serverTokens.getTokens().set(token, inviteServer[0].usid);
-                            await conn.collection('serverTokens').insertOne({ usid: inviteServer[0].usid, token: token });
+                            // await conn.collection('serverTokens').insertOne({ usid: inviteServer[0].usid, token: token });
+                            await client.set("s" + token, "" + inviteServer[0].usid, "EX", 3600);
 
                             res.json({ "Stauts": "Ok", "token": token });
 
@@ -439,24 +458,33 @@ router.route('/join')
             var uuid = parseInt(req.body.uuid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
             // var user = userTokens.getTokens().get(req.body.token);
-            if (matchingToken.length > 0) {
+            var client = new redis(6379, "redis");
 
-                if (matchingToken[0].uuid == uuid) {
+            client.on("error", error => {
+                console.log(error);
+            });
 
-                    var matchingServerToken = await conn.collection('serverTokens').find({ token: req.body.serverToken }).limit(1).toArray();
-                    if (matchingServerToken.length > 0) {
+            var tokenUuid = await client.get(req.body.token);
+            if (tokenUuid != null) {
 
+                if (parseInt(tokenUuid) == uuid) {
+
+                    // var matchingServerToken = await conn.collection('serverTokens').find({ token: req.body.serverToken }).limit(1).toArray();
+                    var tokenUsid = await client.get("s" + req.body.serverToken);
+                    if (tokenUsid != null) {
+
+                        var tokenUsid = parseInt(tokenUsid);
                         var joinUser = await conn.collection('users').find({ uuid: uuid }).limit(1).toArray();
 
                         if (joinUser.length > 0) {
 
-                            var joinServer = await conn.collection('servers').find({ usid: matchingServerToken[0].usid }).limit(1).toArray();
+                            var joinServer = await conn.collection('servers').find({ usid: tokenUsid }).limit(1).toArray();
                             var isAMember = false;
                             for (var i = 0; i < joinServer[0].users.length; i++) {
 
-                                if (joinServer[0].users[i] == joinUser[0].uuid) {
+                                if (joinServer[0].users[i] == uuid) {
 
                                     isAMember = true;
                                     break;
@@ -467,11 +495,12 @@ router.route('/join')
 
                             if (!isAMember) {
 
-                                await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { users: uuid } });
-                                await conn.collection('servers').updateOne({ usid: matchingServerToken[0].usid }, { $push: { usernames: joinUser[0].username } });
-                                await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: matchingServerToken[0].usid } });
+                                await conn.collection('servers').updateOne({ usid: tokenUsid }, { $push: { users: uuid } });
+                                await conn.collection('servers').updateOne({ usid: tokenUsid }, { $push: { usernames: joinUser[0].username } });
+                                await conn.collection('users').updateOne({ uuid: uuid }, { $push: { servers: tokenUsid } });
 
-                                await conn.collection('serverTokens').deleteOne({ token: req.body.serverToken });
+                                // await conn.collection('serverTokens').deleteOne({ token: req.body.serverToken });
+                                await client.getdel("s" + req.body.serverToken);
 
                                 res.json({ "Status": "Ok" });
 
@@ -529,11 +558,18 @@ router.route('/message')
             var usid = parseInt(req.headers.usid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
-            if (matchingToken.length > 0) {
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.headers.token }).limit(1).toArray();
+            var client = new redis(6379, "redis");
+
+            client.on("error", error => {
+                console.log(error);
+            });
+
+            var tokenUuid = await client.get(req.headers.token);
+            if (tokenUuid != null) {
 
                 // var user = userTokens.getTokens().get(token);
-                if (matchingToken[0].uuid == uuid) {
+                if (parseInt(tokenUuid) == uuid) {
 
                     var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                     if (servers.length > 0) {
@@ -636,11 +672,18 @@ router.route('/message')
             var usid = parseInt(req.body.usid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.body.token }).limit(1).toArray();
             // var user = userTokens.getTokens().get(req.body.token);
-            if (matchingToken.length > 0) {
+            var client = new redis(6379, "redis");
 
-                if (matchingToken[0].uuid == uuid) {
+            client.on("error", error => {
+                console.log(error);
+            });
+
+            var tokenUuid = await client.get(req.body.token);
+            if (tokenUuid != null) {
+
+                if (parseInt(tokenUuid) == uuid) {
 
                     var servers = await conn.collection('servers').find({ usid: usid }).limit(1).toArray();
                     if (servers.length > 0) {
@@ -687,12 +730,12 @@ router.route('/message')
                                 });
 
                                 // Update Clients
-                                var client = new redis(6379, "redis");
+                                // var client = new redis(6379, "redis");
 
-                                client.on("error", error => {
-                                    console.log(error);
+                                // client.on("error", error => {
+                                    // console.log(error);
 
-                                });
+                                // });
 
                                 client.publish("messages", JSON.stringify(message));
 
@@ -753,10 +796,17 @@ router.route('/message/listen')
             var usid = parseInt(req.query.usid);
 
             var conn = db.getDB();
-            var matchingToken = await conn.collection('userTokens').find({ token: req.query.token }).limit(1).toArray();
-            if (matchingToken.length > 0) {
+            // var matchingToken = await conn.collection('userTokens').find({ token: req.query.token }).limit(1).toArray();
+            var client = new redis(6379, "redis");
 
-                if (matchingToken[0].uuid == uuid) {
+            client.on("error", error => {
+                console.log(error);
+            });
+
+            var tokenUuid = await client.get(req.query.token);
+            if (tokenUuid != null) {
+
+                if (parseInt(tokenUuid) == uuid) {
 
                     var servers = await conn.collection('servers').find({usid: usid}).limit(1).toArray();
                     if (servers.length > 0) {
@@ -775,12 +825,12 @@ router.route('/message/listen')
 
                             res.write("retry: 10000\n\n");
                             // DO STUFvar 
-                            var client = new redis(6379, "redis");
+                            // var client = new redis(6379, "redis");
 
-                            client.on("error", error => {
-                                console.log(error);
+                            // client.on("error", error => {
+                                // console.log(error);
 
-                            });
+                            // });
 
                             client.subscribe("messages");
                             client.on("message", (channel, message) => {
