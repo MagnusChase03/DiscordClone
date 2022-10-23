@@ -33,8 +33,6 @@ export default function UserManagement() {
 
 
         if (confirm("DELETE ACCOUNT?")) {
-            console.log("Deleting account");
-
             await fetch(window.$serverURL + '/user/delete', {
                 method: 'POST',
                 headers: {

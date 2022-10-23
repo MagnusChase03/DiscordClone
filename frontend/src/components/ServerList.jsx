@@ -94,7 +94,7 @@ export default function ServerList() {
                                     <div key={server.usid} className="serverEntry">
                                         <div className="serverMeta">
                                             <p className="serverName">{server.name}</p>
-                                            <p className="serverOwner">{server.owner}</p>
+                                            <p className="serverOwner">{server.ownerUsername}</p>
                                         </div>
                                         <button className="joinButton" onClick={() => { selectServer(server.usid, server.name) }}>JOIN</button>
                                         {server.owner == cookies.uuid && <button className="inviteButton" onClick={() => { getInvite(server.usid) }}>INVITE</button>}

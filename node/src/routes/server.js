@@ -329,7 +329,7 @@ router.route('/leave')
 
                                 await conn.collection('servers').deleteOne({usid: usid});
 
-                            } else if (theServer[0].owner == matchingToken[0].uuid) {
+                            } else if (theServer[0].owner == uuid) {
 
                                 var newOwner = await conn.collection('users').find({uuid: theServer[0].users[0]}).limit(1).toArray();
 
@@ -815,7 +815,7 @@ router.route('/message/listen')
                     var servers = await conn.collection('servers').find({usid: usid}).limit(1).toArray();
                     if (servers.length > 0) {
 
-                        if (servers[0].users.indexOf(matchingToken[0].uuid) >= 0) {
+                        if (servers[0].users.indexOf(uuid) >= 0) {
 
                             res.set({
 

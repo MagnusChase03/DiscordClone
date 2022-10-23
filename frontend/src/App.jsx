@@ -15,6 +15,7 @@ import UserManagement from './pages/UserManagement';
 function App() {
   // ------ GLOBAL VARIABLES ------
   const [cookies, setCookie] = useCookies(['token']);
+
   let routable = false;
   if (cookies.token != 'null') {
     routable = true;

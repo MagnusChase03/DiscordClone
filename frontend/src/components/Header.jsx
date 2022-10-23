@@ -31,18 +31,12 @@ export default function Header(props) {
     return (
         <>
             <header className="siteHeader">
-                {/* <div className="headerFlexContainer">
-                <div className="titleName"><h2>Discord Clone</h2></div>
-                <div className="centerTitle"><h2>{props.title}</h2></div>
-                <div className="username"><h3>{cookies.username}</h3></div>
-                <div className="logoutButton"><button onClick={() => { logout() }}>LOGOUT</button></div>
-                </div> */}
-
                 <section className="navbar">
                     <div className="leftEdge"><h2>Discord Clone</h2></div>
                     <div className="centerEdge"><h2>{props.title}</h2></div>
                     <div className="rightEdge">
                         <button className="logoutButton" onClick={() => { logout() }}>LOGOUT</button>
+                        <button className="serverButton" onClick={() => { navigate('/servers') }}>SERVERS</button>
                         <h3 className="username">{cookies.username}</h3>
                     </div>
                 </section>

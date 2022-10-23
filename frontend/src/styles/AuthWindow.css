@@ -14,7 +14,7 @@
     padding: 0.5em;
     width: 95%;
     margin: 0.5em auto;
-    color: #b5001b;
+    color: #242424;
     font-weight: 900;
     font-size: 24px;
 }
@@ -38,4 +38,12 @@
 
 .signUpButton {
     margin: 5em 0 0 0;
+}
+
+.signUpInsteadBtn {
+    margin-top: 2em;
+}
+
+.signInInsteadBtn {
+    margin-top: 2em;
 }

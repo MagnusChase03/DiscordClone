@@ -22,9 +22,6 @@ function ChatWindow() {
     const navigate = useNavigate();
     const [eventSource, eventSourceStatus] = useEventSource("http://localhost:3000/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token, false);
 
-
-
-
     useEffect(() => {
         fetch(window.$serverURL + "/server/message", {
             method: 'GET',
@@ -45,7 +42,7 @@ function ChatWindow() {
         let data = JSON.parse(evt.data);
         let newMessages = [...messages];
         newMessages.push(data);
-        
+
         setMessages(newMessages);
     }, [messages]);
 
@@ -68,52 +65,58 @@ function ChatWindow() {
             token: cookies.token,
             usid: cookies.usid
         }
+        if (confirm("LEAVE SERVER?")) {
 
-        await fetch(window.$serverURL + '/server/leave', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            },
-            body: window.$generateForm(serverObject)
-        });
-        navigate('/');
+            await fetch(window.$serverURL + '/server/leave', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: window.$generateForm(serverObject)
+            });
+            navigate('/');
+        }
     }
 
     return (
         <>
             <Header title={cookies.serverName} />
-            <MemberList />
-            <button onClick={() => { leaveServer() }}>Leave Server</button>
 
-            <div className="chatWindow">
-                {messages.map((message) => {
-                    if (message.user == cookies.uuid) {
-                        return (
-                            <div key={message.umid} className="messageContainerUser">
-                                {/* <p className="messageSender">{message.user}:</p> */}
-                                <p className="messageContent">{message.content}</p>
-                            </div>
-                        );
-                    }
-                    else {
-                        return (
-                            <div key={message.umid} className="messageContainerServer">
-                                <p className="messageSender">{message.username}:</p>
-                                <p className="messageContent">{message.content}</p>
-                            </div>
-                        )
-                    }
-                    
-                })}
+            <div className="chatPage">
+                <div className="serverMeta">
+                    <MemberList />
+                    <button onClick={() => { leaveServer() }}>Leave Server</button>
+                </div>
 
-                {/* {console.log(messages)} */}
+                <div className="chatFunctions">
+                    <div className="chatWindow">
+                        {messages.map((message) => {
+                            if (message.user == cookies.uuid) {
+                                return (
+                                    <div key={message.umid} className="messageContainerUser">
+                                        {/* <p className="messageSender">{message.user}:</p> */}
+                                        <p className="messageContent">{message.content}</p>
+                                    </div>
+                                );
+                            }
+                            else {
+                                return (
+                                    <div key={message.umid} className="messageContainerServer">
+                                        <p className="messageSender">{message.username}:</p>
+                                        <p className="messageContent">{message.content}</p>
+                                    </div>
+                                )
+                            }
 
-                {messages.length === 0 && <h1>👻 It's Spooky in here!</h1>}
-                <div ref={messagesEndRef} />
+                        })}
+                        {messages.length === 0 && <h1>👻 It's Spooky in here!</h1>}
+                        <div ref={messagesEndRef} />
+                    </div>
+                    <SendMessage />
+                </div>
+                <Messages />
             </div>
-            <SendMessage />
-            <Messages />
-            {/* <Footer /> */}
+
         </>
     );
 }

@@ -31,7 +31,13 @@
 }
 
 .logoutButton {
-    margin-left: 5%;
+    margin-left: 2%;
+    height: 70%;
+    background-color: #ff6961;
+}
+
+.serverButton {
+    margin-left: 2%;
     height: 70%;
 }
 

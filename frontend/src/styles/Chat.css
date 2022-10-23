@@ -1,14 +1,32 @@
+.chatPage {
+    margin-top: 7rem;
+    display: flex;
+    flex-direction: row;
+    /* align-items: center; */
+}
+
+.serverMeta {
+    /* margin: 2rem; */
+}
+
+.chatFunctions {
+    margin-left: 15rem;
+}
+
+.memberList {
+    width: 13vw;
+    max-height: 70vh;
+    min-height: 50vh;
+    overflow-y: scroll;
+    border: 1px solid;
+}
+
 .chatWindow {
     width: 50vw;
     border: 1px solid;
-    /* height: 60vh;
-    overflow: auto; */
-
-    bottom: 0;
     max-height: 70vh;
     min-height: 50vh;
-    /* transition: height 1s; */
-    overflow-y:scroll;
+    overflow-y: scroll;
     display: flex;
     flex-direction: column;
 }

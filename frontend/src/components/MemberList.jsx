@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
-import '../styles/ServerSelect.css';
+import '../styles/Chat.css';
 
 
 export default function MemberList() {
@@ -28,7 +28,7 @@ export default function MemberList() {
     return (
         <>
             <h4>Members</h4>
-            <ul>
+            <ul className="memberList">
                 {members.map((member) => (
                     <li key={member}>{member}</li>
                 ))}
