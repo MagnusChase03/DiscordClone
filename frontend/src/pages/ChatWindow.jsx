@@ -20,7 +20,7 @@ function ChatWindow() {
     const [sentCount, setSentCount] = useState(0);
     const [page, setPage] = useState('chat');
     const navigate = useNavigate();
-    const [eventSource, eventSourceStatus] = useEventSource("http://localhost:3000/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token, false);
+    const [eventSource, eventSourceStatus] = useEventSource(window.$serverURL + "/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token, false);
 
     useEffect(() => {
         fetch(window.$serverURL + "/server/message", {

@@ -22,7 +22,7 @@ function App() {
   }
 
   // Backend server URL
-  window.$serverURL = "http://localhost:3000";
+  window.$serverURL = "https://localhost:3000";
 
   // POST body generation function
   window.$generateForm = function generateForm(object) {
