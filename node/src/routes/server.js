@@ -792,7 +792,7 @@ router.route('/message/listen')
 
 
                             req.on('close', async () => {
-
+                                client.disconnect();
                                 console.log("Closed");
 
                             });
