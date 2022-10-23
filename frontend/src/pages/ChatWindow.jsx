@@ -20,6 +20,11 @@ function ChatWindow() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        let eventSource = new EventSource("http://localhost:3000/server/message/listen?uuid=" + cookies.uuid + "&usid=" + cookies.usid + "&token=" + cookies.token);
+        eventSource.onmessage = e => console.log(JSON.parse(e.data));
+      }, [])
+
+    useEffect(() => {
         fetch(window.$serverURL + "/server/message", {
             method: 'GET',
             headers: {
