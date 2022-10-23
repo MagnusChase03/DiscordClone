@@ -1,37 +1,32 @@
-
 import React, { useState, useEffect } from "react";
 import { useCookies } from 'react-cookie';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 import '../styles/ServerSelect.css';
 
-export default function AddServer(props) {
-
+export default function JoinServer(props) {
     const [cookies, setCookie] = useCookies(['token', 'uuid', 'username']);
-    
-    function createServer(data) {
-        const serverObject = {
+
+    async function joinServer(serverToken) {
+        const joinObject = {
             uuid: cookies.uuid,
             token: cookies.token,
-            name: data.name
+            serverToken: serverToken.serverToken
         }
 
-        fetch(window.$serverURL + "/server", {
+        await fetch(window.$serverURL + "/server/join", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: window.$generateForm(serverObject),
+            body: window.$generateForm(joinObject)
         })
-            .then((response) => response.json());
-            // .then((data) => { console.log(data) });
-
+        console.log("JOINED SERVER");
         props.updateServers(props.servers + 1);
     }
 
-
     const ErrorSchema = Yup.object().shape({
-        name: Yup.string().required('Required'),
+        serverToken: Yup.string().required('Required'),
     });
 
     return (
@@ -39,16 +34,16 @@ export default function AddServer(props) {
             <Formik
                 // Initial values for fields
                 initialValues={{
-                    name: "",
+                    serverToken: "",
                 }}
                 validationSchema={ErrorSchema}
-                onSubmit={(values) => { createServer(values); values.name = ''; }}
+                onSubmit={(values) => { joinServer(values); values.serverToken = ''; }}
             >
                 {({ errors, touched }) => (
                     <Form className="serverForm">
-                        <Field id="name" name="name" placeholder="Server Name" />
-                        {touched.name && errors.name && <div className="serverNameErrors">{errors.name}</div>}
-                        <button type="submit">Create Server</button>
+                        <Field id="serverToken" name="serverToken" placeholder="Join Code" />
+                        {touched.serverToken && errors.serverToken && <div className="serverNameErrors">{errors.serverToken}</div>}
+                        <button type="submit">Join Server</button>
                     </Form>
                 )}
             </Formik>

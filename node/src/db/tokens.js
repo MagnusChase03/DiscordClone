@@ -1,5 +1,3 @@
-var tokens = new Map();
-
 module.exports = {
 
     generateToken: function() {

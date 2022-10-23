@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-nano/use-event-source": "^0.12.0",
     "formik": "^2.2.9",
     "react": "^18.2.0",
     "react-cookie": "^4.1.1",

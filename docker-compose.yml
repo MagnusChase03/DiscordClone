@@ -2,6 +2,7 @@ version: "3.9"
 services:
   mongodb:
     build: ./mongodb
+    restart: unless-stopped
     volumes:
       - type: volume
         source: mongodb
@@ -10,37 +11,61 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: DiscordClone
+  redis:
+    build: ./redis
+    restart: unless-stopped
   nodejs:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nodejs2:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nodejs3:
     build: ./node
+    restart: unless-stopped
     volumes:
       - type: bind
         source: ./node/src
         target: /node
+      - type: volume
+        source: certs
+        target: /node/certs
     depends_on:
       - mongodb
   nginx:
-    build: ./nginx
+    build: 
+      context: ./nginx
+      args:
+        mode: "dev"
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    volumes:
+      - type: volume
+        source: certs
+        target: /etc/nginx/certs
     depends_on:
       - nodejs
       - nodejs2
       - nodejs3
 volumes:
   mongodb:
+  certs:
