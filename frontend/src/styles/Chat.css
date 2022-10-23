@@ -1,31 +1,61 @@
 .chatPage {
-    margin-top: 7rem;
+    margin-top: 5rem;
     display: flex;
     flex-direction: row;
     /* align-items: center; */
 }
 
-.serverMeta {
-    /* margin: 2rem; */
+.serverInfo {
+    margin-top: 3rem;
+    height: 100%;
+    border-radius: 8px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    background-color: #1f1f1f;
 }
 
 .chatFunctions {
-    margin-left: 15rem;
+    margin-left: 11rem;
+    padding: 2rem;
+    height: 100%;
+    border-radius: 8px;
+    background-color: #1f1f1f;
 }
 
 .memberList {
-    width: 13vw;
+    width: 15vw;
     max-height: 70vh;
     min-height: 50vh;
-    overflow-y: scroll;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-color: transparent transparent; /*just hides the scrollbar for firefox */
     border: 1px solid;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.memberList ::-moz-scrollbar {
+    display: none;
+}
+
+.memberList li {
+    text-align: left;
+    margin: 0.75rem;
+}
+
+.leaveServerButton {
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #ff6961;
 }
 
 .chatWindow {
     width: 50vw;
     border: 1px solid;
-    max-height: 70vh;
-    min-height: 50vh;
+    /* min-height: 50vh;
+    max-height: 70vh; */
+    height: 65vh;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;

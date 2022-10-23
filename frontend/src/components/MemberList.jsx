@@ -27,7 +27,7 @@ export default function MemberList() {
 
     return (
         <>
-            <h4>Members</h4>
+            <h2>Members</h2>
             <ul className="memberList">
                 {members.map((member) => (
                     <li key={member}>{member}</li>

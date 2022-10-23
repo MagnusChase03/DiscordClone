@@ -83,9 +83,9 @@ function ChatWindow() {
             <Header title={cookies.serverName} />
 
             <div className="chatPage">
-                <div className="serverMeta">
+                <div className="serverInfo">
                     <MemberList />
-                    <button onClick={() => { leaveServer() }}>Leave Server</button>
+                    <button className="leaveServerButton" onClick={() => { leaveServer() }}>Leave Server</button>
                 </div>
 
                 <div className="chatFunctions">
