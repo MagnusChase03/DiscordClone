@@ -18,4 +18,4 @@ copy repl.sh .
 copy init.js .
 copy repl.js .
 
-cmd bash init.sh && mongod
+cmd bash init.sh
