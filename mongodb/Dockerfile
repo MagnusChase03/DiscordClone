@@ -14,6 +14,8 @@ run apt install mongodb-org -y
 run mkdir -p /data/db
 
 copy init.sh .
-run bash init.sh
+copy repl.sh .
+copy init.js .
+copy repl.js .
 
-cmd mongod
+cmd bash init.sh && mongod

@@ -10,6 +10,22 @@ services:
     environment:
       USER: root
       PASSWD: ${MONGO_INITDB_ROOT_PASSWORD}
+      TYPE: primary
+      NAME: mongodb
+    depends_on:
+      - mongodb2
+  mongodb2:
+    build: ./mongodb
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: mongodb2
+        target: /data/db
+    environment:
+      USER: root
+      PASSWD: ${MONGO_INITDB_ROOT_PASSWORD}
+      TYPE: secondary
+      NAME: mongodb2
   redis:
     build: ./redis
     restart: unless-stopped
@@ -67,4 +83,5 @@ services:
       - nodejs3
 volumes:
   mongodb:
+  mongodb2:
   certs:
