@@ -9,3 +9,10 @@ rs.initiate({
   ]
 
 })
+
+db = new Mongo().getDB("DiscordClone")
+db.getMongo().setReadPref({
+
+    mode: "secondary"
+
+})
