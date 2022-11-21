@@ -11,7 +11,7 @@ export default function AuthWindow() {
         <>
             {authType == 'login' &&
                 <div className="authContainer">
-                    <h3>AUTHENTICATION REQUIRED</h3>
+                    <h3>AUTHENTICATION plz</h3>
                     <SignIn />
                     <button className="signUpInsteadBtn" onClick={() => { setAuthType('signup') }}>Sign Up Instead</button>
                 </div>
